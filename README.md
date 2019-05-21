@@ -1,4 +1,4 @@
-# graduate_cource1
+# graduate_cource
 
 Tips for git & git hub
 
@@ -15,6 +15,8 @@ $ gedit ~/.gitignore and add:
 \_\_pycache\_\_/
 
 .ipynb_checkpoints/
+
+$ git rm -cached filename
 
 
 $ git clone github_link.git
