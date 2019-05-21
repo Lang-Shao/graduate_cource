@@ -14,6 +14,8 @@ $ gedit ~/.gitignore and add:
 
 __pycache__/
 
+.ipynb_checkpoints/
+
 
 $ git clone github_link.git
 
