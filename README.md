@@ -12,7 +12,7 @@ $ gedit ~/.gitignore and add:
 
 *.pyc
 
-__pycache__/
+\_\_pycache\_\_/
 
 .ipynb_checkpoints/
 
