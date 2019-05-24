@@ -16,6 +16,12 @@ $ gedit ~/.gitignore and add:
 
 .ipynb_checkpoints/
 
+
+$ git config --global credential.helper cache
+
+$ git config --global credential.helper 'cache --timeout=3600'
+
+
 $ git rm -cached filename
 
 
@@ -32,3 +38,5 @@ $ git commit -am "message"
 $ git push
 
 $ git pull
+
+
