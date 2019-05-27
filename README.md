@@ -19,7 +19,7 @@ $ gedit ~/.gitignore and add:
 
 $ git config --global credential.helper cache
 
-$ git config --global credential.helper 'cache --timeout=7200'
+$ git config --global credential.helper 'cache --timeout=720000'
 
 
 $ git rm -cached filename
