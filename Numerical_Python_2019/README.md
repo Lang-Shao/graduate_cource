@@ -2,8 +2,9 @@ Numerical Python - Scientific Computing and Data Science Applications with Numpy
 
 Second Edition
 
-Apress 2019
-
 by R. Johansson
+
+Copyright @ 2019, Apress
+
 
 https://github.com/Apress/numerical-python-second-ed
