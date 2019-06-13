@@ -3,9 +3,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from mpl_toolkits.basemap import Basemap
+from astropy.time import Time
+from astropy.coordinates import get_sun, get_moon, SkyCoord
+import astropy.units as u
+import pandas as pd
+import os
 
-fig = plt.figure()
-
+fig = plt.figure(figsize=(20,10))
+ax = fig.add_subplot(111)
 
 def f(x, y):
     return np.sin(x) + np.cos(y)
