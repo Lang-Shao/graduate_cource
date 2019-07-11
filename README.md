@@ -42,6 +42,8 @@ $ git pull
 
 
 Tips for conda
+https://www.anaconda.com/distribution/
+
 
 conda update conda
 
