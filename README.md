@@ -40,3 +40,21 @@ $ git push
 $ git pull
 
 
+
+Tips for conda
+
+conda update conda
+
+conda update conda-build # in case conda-build raises warnings
+
+conda activate enviname # activate into an environment
+
+conda activate  # back to base environment
+
+
+conda install packname # run in given environment
+
+conda install --channel channelname <package>
+conda install -c channelname <package> # the same
+
+
