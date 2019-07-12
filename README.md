@@ -1,6 +1,11 @@
-# graduate_cource
+-----------------------------
+# Tips for my graduate cource
+-----------------------------
 
+>>>>>>>>>>>>>>>>>>>>>>
 Tips for git & git hub
+>>>>>>>>>>>>>>>>>>>>>>
+
 
 $ git config --global user.name "John Doe"   
 
@@ -40,10 +45,10 @@ $ git push
 $ git pull
 
 
-
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Tips for conda
 https://www.anaconda.com/distribution/
-
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 conda update conda
 
@@ -72,3 +77,7 @@ conda install -c conda-forge spherical-geometry
 conda install -c anaconda basemap 
 conda install -c r rpy2 
 
+>>>>>>>>>>>>>>>>>>>>>>>
+# try jupyter online
+https://jupyter.org/try
+>>>>>>>>>>>>>>>>>>>>>>>
