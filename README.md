@@ -1,10 +1,9 @@
------------------------------
 Tips for my graduate cource
+-----------------------------
 
 
------------------------
 Tips for git & git hub
-
+-----------------------
 
 
 $ git config --global user.name "John Doe"   
@@ -45,7 +44,6 @@ $ git push
 $ git pull
 
 
---------------------------------------
 Tips for conda
 -----------------
 
