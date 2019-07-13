@@ -47,6 +47,7 @@ $ git pull
 
 --------------------------------------
 Tips for conda
+-----------------
 
 https://www.anaconda.com/distribution/
 
@@ -77,7 +78,6 @@ conda install -c conda-forge spherical-geometry
 conda install -c anaconda basemap 
 conda install -c r rpy2 
 
----------------------
 try jupyter online
 ---------------------
 https://jupyter.org/try
