@@ -51,6 +51,8 @@ https://www.anaconda.com/distribution/
 
 conda update conda
 
+conda update anaconda
+
 conda update conda-build # in case conda-build raises warnings
 
 
