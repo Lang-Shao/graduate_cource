@@ -12,6 +12,7 @@ conda update conda
 conda update anaconda
 
 ==========
+
 https://github.com/fermi-lat/Fermitools-conda/wiki/Quickstart-Guide
 Once you have downloaded and installed Anaconda, use the following command to download and setup your Fermitools environment:
 
@@ -46,6 +47,7 @@ conda activate fermi
 conda install -c conda-forge fermipy 
 OR
 conda install -c conda-forge/label/cf201901 fermipy 
+
 ==========
 
 note on July 17, 2019:
