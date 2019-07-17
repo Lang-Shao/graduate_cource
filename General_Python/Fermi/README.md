@@ -47,3 +47,7 @@ conda install -c conda-forge fermipy
 OR
 conda install -c conda-forge/label/cf201901 fermipy 
 ==========
+
+note on July 17, 2019:
+
+Jupyter notebook has issues in fermi environment which use python2.7, so do not use jupyter
