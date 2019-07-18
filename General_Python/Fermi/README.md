@@ -50,13 +50,21 @@ conda install -c conda-forge/label/cf201901 fermipy
 
 ==========
 
-note on July 17, 2019:
+issue note on July 17, 2019:
 
 如果出现编码问题：类似错误如下UnicodeDecodeError: 'ascii' codec can't decode byte 0xe5 in position 4: ordinal not in range(128)，这是由于python2中的编码bug，需要在python目录/lib/python2.7/site-packages/中新建一个文件：
 sitecustomize.py,其中包含下列代码。
 import sys
-sys.setdefaultencoding(‘utf-8’)
+sys.setdefaultencoding('utf-8')
 
 随后再修改系统默认编码:
 export LANG=en_US:UTF-8
 export LANGUAGE=en_US:en
+
+=========
+
+issue note on July 18, 2019:
+
+KeyError: 'PROJ_LIB' when: from mpl_toolkits.basemap import Basemap
+
+export PROJ_LIB=$CONDA_PREFIX/share/proj  # Linux and OS X
