@@ -1,5 +1,7 @@
 https://github.com/FermiSummerSchool/fermi-summer-school
 
+https://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/python_tutorial.html
+
 https://fermi.gsfc.nasa.gov/ssc/data/p7rep/analysis/scitools/python_tutorial.html
 
 https://heasarc.nasa.gov/cgi-bin/W3Browse/w3browse.pl
