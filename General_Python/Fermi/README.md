@@ -19,6 +19,13 @@ bash Anaconda3-2019.03-Linux-x86_64.sh
 conda update conda
 conda update anaconda
 
+
+conda config --show | grep auto_activate_base
+
+If you do not want conda to auto activate its base environment:
+
+conda config --set auto_activate_base False
+
 ==========
 
 https://github.com/fermi-lat/Fermitools-conda/wiki/Quickstart-Guide
