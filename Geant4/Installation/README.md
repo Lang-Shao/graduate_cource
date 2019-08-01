@@ -43,7 +43,7 @@ Build options may be set by passing their name and value to the cmake command vi
 
 > conda deactivate
 
-to get out the conda environment before cmake (which otherwise would use the compilers in conda instead of the ystem compilers as required by Geant4 build).
+to get out the conda environment before cmake (which otherwise would use the compilers in conda instead of the system compilers as required by Geant4 build).
 
 OUTPUT:
 
