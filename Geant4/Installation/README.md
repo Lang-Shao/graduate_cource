@@ -39,6 +39,12 @@ Build options may be set by passing their name and value to the cmake command vi
 
 > cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
+* If you are using anaconda for other purpose, use:
+
+> conda deactivate
+
+to get out the conda environment before cmake (which otherwise would use the compilers in conda instead of the ystem compilers as required by Geant4 build).
+
 OUTPUT:
 
 -- The C compiler identification is GNU 7.4.0
