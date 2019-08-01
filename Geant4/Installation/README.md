@@ -108,7 +108,7 @@ my case:
 
 > make -j4
 
-then the build will take a while to download the Geant4 datasets sepcifiled by -DGEANT4_INSTALL_DATA=ON.
+then the build will take a while to download the Geant4 datasets (~1.7 Gb) sepcifiled by -DGEANT4_INSTALL_DATA=ON.
 
 
 4)
@@ -117,3 +117,38 @@ Once the build has completed, you can install Geant4 to the directory you specif
 CMAKE_INSTALL_PREFIX by running in the build directory:
 
 > make install
+
+After installation
+------------------
+
+add to ~/.bashrc:
+
+alias geant_init='. /home/lang/Software/geant4/geant4.10.05.p01-install/bin/geant4.sh'
+
+Make an excutable program
+-------------------------
+
+1) initialize Geant4 
+
+> geant_init
+
+
+2) use cmake to build applications after initializing Geant4
+
+for ./B1/CMakeList.txt
+
+	./B1/exampleB1.cc
+
+	./B1/include/... headers.hh ...
+
+	./B1/src/... source.cc ...
+
+> mkdir ./B1-build
+
+> cd ./B1-build
+
+> cmake ../B1
+
+> make [-jN] [VERBOSE=1]
+
+> ./exampleB1
