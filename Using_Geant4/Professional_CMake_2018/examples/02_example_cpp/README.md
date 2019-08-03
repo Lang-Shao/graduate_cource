@@ -1,7 +1,7 @@
 Compile a C++ source using cmake
 ---------------------------------
 
-Type:
+Type in the terminal in the source directory:
 
 > cmake .
 
