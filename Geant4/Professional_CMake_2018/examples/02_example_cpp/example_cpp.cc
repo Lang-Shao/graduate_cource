@@ -1,4 +1,5 @@
 // compile this C++ source code using cmake
+// this example is listed in Figure 1-1 for a complete C++ program
 
 #include <iostream>
 
