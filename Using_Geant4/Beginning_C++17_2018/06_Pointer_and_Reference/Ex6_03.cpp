@@ -1,4 +1,4 @@
-// Initializing pointers with strings
+// Revision of Example Ex6_03 by Shao
 #include  <iostream>
 
 int main()
@@ -14,7 +14,5 @@ int main()
 
 	std::cout << "The first letter of your lucky star is " << *pstar1 << std::endl;
 	std::cout << "Your lucky star is " << pstar1 << std::endl;
-
-
 
 }
