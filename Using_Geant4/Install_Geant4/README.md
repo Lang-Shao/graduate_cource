@@ -182,3 +182,28 @@ for ./B1/CMakeList.txt
 > make [-jN] [VERBOSE=1]
 
 > ./exampleB1
+
+Issues
+-------
+
+If the following warnings are shown when running geant4 script:
+
+G4OpenGLXViewer::CreateFontLists XLoadQueryFont failed for font
+  -adobe-courier-bold-r-normal--10-100-75-75-m-60-iso8859-1
+
+G4OpenGLXViewer::CreateFontLists XLoadQueryFont failed for font
+  -adobe-courier-bold-r-normal--11-80-100-100-m-60-iso8859-1
+
+G4OpenGLXViewer::CreateFontLists XLoadQueryFont failed for font
+  -adobe-courier-bold-r-normal--12-120-75-75-m-70-iso8859-1
+
+....
+
+My solution:
+
+> sudo apt-get install xfonts-100dpi xfonts-75dpi gsfonts-x11
+
+and 
+
+> reboot
+
