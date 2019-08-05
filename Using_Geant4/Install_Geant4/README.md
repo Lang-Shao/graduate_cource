@@ -23,6 +23,22 @@ http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/f
 MY STEPS on ubuntu 18.04:
 -----------
 
+Pre-steps for visualization using OpenGL:
+---------------------------
+
+All in all, install Mesa, Make and GCC/g++. Most Linux distributions rely on the Mesa3D project to provide their OpenGL implementation. This supplies libraries for regular OpenGL as well as OpenGL ES 1.x and 2.0.
+
+> sudo apt-get install build-essential libgl1-mesa-dev
+
+> sudo apt install mesa-utils
+
+Type this in a terminal to get much info about your OpenGL driver, including supported extensions:
+
+> glxinfo | grep OpenGL
+
+Formal steps
+------------
+
 1) 
 
 extract source to /home/lang/Software/geant4/geant4.10.05.p01
@@ -37,7 +53,9 @@ Build options may be set by passing their name and value to the cmake command vi
 
 > cd /home/lang/Software/geant4/geant4.10.05.p01-build
 
-> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
+# put on the options for building the X11 OpenGL visualization driver
+
+> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
 * If you are using anaconda for other purpose, use:
 
@@ -88,9 +106,13 @@ OUTPUT:
 -- The following Geant4 features are enabled:
 GEANT4_BUILD_CXXSTD: Compiling against C++ Standard '11'
 GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
+.......................
+
 
 -- Configuring done
+
 -- Generating done
+
 -- Build files have been written to: /home/lang/Software/geant4/geant4.10.05.p01-build
 
 * The exact output will differ depending on the exact platform/compiler in use, but the last three lines should be the same to within path differences. These indicate a successful configuration.
