@@ -55,7 +55,7 @@ Build options may be set by passing their name and value to the cmake command vi
 
 # put on the options for building the X11 OpenGL visualization driver
 
-> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
+> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
 * If you are using anaconda for other purpose, use:
 
@@ -103,10 +103,18 @@ OUTPUT:
 -- Configuring download of missing dataset G4ABLA (3.1)
 -- Configuring download of missing dataset G4INCL (1.0)
 -- Configuring download of missing dataset G4ENSDFSTATE (2.2)
+
 -- The following Geant4 features are enabled:
+
 GEANT4_BUILD_CXXSTD: Compiling against C++ Standard '11'
+
+GEANT4_BUILD_MULTITHREADED: Build multithread enabled libraries
+
+GEANT4_BUILD_TLS_MODEL: Building with TLS model 'initial-exec'
+
 GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
-.......................
+
+GEANT4_USE_OPENGL_X11: Build Geant4 OpenGL driver with X11 support
 
 
 -- Configuring done
