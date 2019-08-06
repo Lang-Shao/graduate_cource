@@ -24,18 +24,52 @@ http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/InstallationGuide/f
 MY STEPS on ubuntu 18.04:
 -----------
 
-Pre-steps for visualization using OpenGL:
+Pre-steps 
 ---------------------------
 
-All in all, install Mesa, Make and GCC/g++. Most Linux distributions rely on the Mesa3D project to provide their OpenGL implementation. This supplies libraries for regular OpenGL as well as OpenGL ES 1.x and 2.0.
+1. Update & Install g++ and cmake:
 
-> sudo apt-get install build-essential libgl1-mesa-dev
+> sudo apt-get install build-essential
 
-> sudo apt install mesa-utils
+> sudo apt-get install cmake
+
+
+2. Visualization using OpenGL:
+
+1) Install X11
+
+> sudo apt-get install libxaw7-dev libxaw7
+
+To check if X11 is already installed and to know its version: 
+
+> xdpyinfo|grep -i version
+
+2) OpenGL (Mesa) 
+
+> sudo apt-get install freeglut3 freeglut3-dev mesa-utils mesa-common-dev
+
+> sudo apt-get install libglu1-mesa-dev libgl1-mesa-dev 
+
+> sudo apt-get install libxerces-c-dev
 
 Type this in a terminal to get much info about your OpenGL driver, including supported extensions:
 
 > glxinfo | grep OpenGL
+
+3) Qt
+
+check qt version:
+
+> qmake --version
+
+Install:
+
+> sudo apt install qt5-default
+
+
+3. Installation of additional librairies:
+
+> sudo apt-get install libfontconfig1 libfontconfig1-dev libfreetype6-dev libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxrandr-dev libxrender-dev
 
 Formal steps
 ------------
@@ -54,9 +88,9 @@ Build options may be set by passing their name and value to the cmake command vi
 
 > cd /home/lang/Software/geant4/geant4.10.05.p01-build
 
-# put on the options for building the X11 OpenGL visualization driver
+# put on the options for building the X11 OpenGL visualization driver and using QT
 
-> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
+> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
 * If you are using anaconda for other purpose, use:
 
@@ -114,6 +148,8 @@ GEANT4_BUILD_MULTITHREADED: Build multithread enabled libraries
 GEANT4_BUILD_TLS_MODEL: Building with TLS model 'initial-exec'
 
 GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
+
+GEANT4_USE_QT: Build Geant4 with Qt support
 
 GEANT4_USE_OPENGL_X11: Build Geant4 OpenGL driver with X11 support
 
