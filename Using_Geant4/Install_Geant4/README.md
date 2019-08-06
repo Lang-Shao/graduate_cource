@@ -71,6 +71,8 @@ Install:
 
 > sudo apt-get install libfontconfig1 libfontconfig1-dev libfreetype6-dev libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxrandr-dev libxrender-dev
 
+> sudo apt-get install xfonts-100dpi xfonts-75dpi gsfonts-x11
+
 Formal steps
 ------------
 
