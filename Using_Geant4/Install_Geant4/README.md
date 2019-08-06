@@ -36,7 +36,7 @@ Pre-steps
 
 2. Visualization using OpenGL:
 
-1) Install X11
+a. Install X11
 
 > sudo apt-get install libxaw7-dev libxaw7
 
@@ -44,7 +44,7 @@ To check if X11 is already installed and to know its version:
 
 > xdpyinfo|grep -i version
 
-2) OpenGL (Mesa) 
+b. OpenGL (Mesa) 
 
 > sudo apt-get install freeglut3 freeglut3-dev mesa-utils mesa-common-dev
 
@@ -56,7 +56,7 @@ Type this in a terminal to get much info about your OpenGL driver, including sup
 
 > glxinfo | grep OpenGL
 
-3) Qt
+c. Qt
 
 check qt version:
 
@@ -74,7 +74,7 @@ Install:
 Formal steps
 ------------
 
-1) 
+1. Prepare directories
 
 extract source to /home/lang/Software/geant4/geant4.10.05.p01
 
@@ -82,7 +82,7 @@ extract source to /home/lang/Software/geant4/geant4.10.05.p01
 
 > mkdir /home/lang/Software/geant4/geant4.10.05.p01-build
 
-2)
+2. build
 
 Build options may be set by passing their name and value to the cmake command via -D flags.
 
@@ -162,7 +162,7 @@ GEANT4_USE_OPENGL_X11: Build Geant4 OpenGL driver with X11 support
 
 * The exact output will differ depending on the exact platform/compiler in use, but the last three lines should be the same to within path differences. These indicate a successful configuration.
 
-3) 
+3. make  
 
 After the configuration has run, CMake will have generated Unix Makefiles for building Geant4. To run the build,
 simply execute make in the build directory:
@@ -178,7 +178,7 @@ my case:
 then the build will take a while to download the Geant4 datasets (~1.7 Gb) sepcifiled by -DGEANT4_INSTALL_DATA=ON.
 
 
-4)
+4. make install
 
 Once the build has completed, you can install Geant4 to the directory you specified earlier in
 CMAKE_INSTALL_PREFIX by running in the build directory:
