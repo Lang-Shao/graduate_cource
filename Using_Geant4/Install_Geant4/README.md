@@ -177,7 +177,11 @@ my case:
 
 > make -j4
 
-then the build will take a while to download the Geant4 datasets (~1.7 Gb) sepcifiled by -DGEANT4_INSTALL_DATA=ON.
+To know how many cores your CPU has: 
+
+> cat /proc/cpuinfo | grep processor | wc -l
+
+then the build will download the Geant4 datasets (~1.7 Gb) sepcifiled by -DGEANT4_INSTALL_DATA=ON.
 
 
 4. make install
