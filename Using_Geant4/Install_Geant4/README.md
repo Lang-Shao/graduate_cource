@@ -13,6 +13,7 @@ http://geant4.web.cern.ch/support/user_documentation
 
 http://geant4-userdoc.web.cern.ch/geant4-userdoc/UsersGuides/ForApplicationDeveloper/fo/BookForApplicationDevelopers.pdf
 
+https://github.com/martraire/Install_Geant4
 
 Document for installation:
 --------------------------
