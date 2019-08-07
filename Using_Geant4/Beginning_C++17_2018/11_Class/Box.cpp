@@ -14,7 +14,7 @@ Box::Box(double side): 	Box{side, side, side}
 }
 
 
-double Box::volumn()
+double Box::volume()
 {
 	return length*width*height;
 }
@@ -22,8 +22,8 @@ double Box::volumn()
 int main()
 {
 	Box myBox1{10.0, 10.0, 10.0};
-	std::cout << "Volumn of the myBox1 is " << myBox1.volumn() << std::endl;
+	std::cout << "Volume of the myBox1 is " << myBox1.volume() << std::endl;
 
 	Box secondBox{4.0};
-	std::cout << "Volumn of secondBox is " << secondBox.volumn() << std::endl;
+	std::cout << "Volume of secondBox is " << secondBox.volume() << std::endl;
 }

@@ -13,7 +13,7 @@ public:
 	explicit Box(double side);
 	Box() = default;
 
-	double volumn();
+	double volume();
 
 };
 
