@@ -46,3 +46,11 @@ Usage
 > make
 
 > ./Ex3_03
+
+
+Using G++ compiler
+------------------
+
+> g++ Ex3_03 -o Ex3_03
+
+> ./Ex3_03

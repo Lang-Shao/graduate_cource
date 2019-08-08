@@ -13,3 +13,11 @@ Usage
 > make
 
 > ./Ex6_03
+
+
+Using G++ compiler
+------------------
+
+> g++ Ex6_03 -o Ex6_03
+
+> ./Ex6_03

@@ -9,3 +9,10 @@ Usage
 > make
 
 > ./Box
+
+Using G++ compiler
+------------------
+
+> g++ Box.cpp -o Box
+
+> ./Box
