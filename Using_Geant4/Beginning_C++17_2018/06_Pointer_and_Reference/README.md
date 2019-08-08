@@ -8,16 +8,25 @@ address will be written to cout.
 Usage
 -----
 
-> cmake .
+1. Using G++ compiler
+------------------
 
-> make
+> g++ Ex6_03.cpp -o Ex6_03
 
 > ./Ex6_03
 
+2. Using Make
+--------------
 
-Using G++ compiler
-------------------
+> make Ex6_03
 
-> g++ Ex6_03 -o Ex6_03
+> ./Ex6_03
+
+3. Using CMake
+---------------
+
+> cmake .
+
+> make
 
 > ./Ex6_03

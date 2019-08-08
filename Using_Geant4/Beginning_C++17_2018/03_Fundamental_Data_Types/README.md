@@ -41,6 +41,23 @@ perfectly suited for that.
 Usage
 -----
 
+1. Using G++ compiler
+------------------
+
+> g++ Ex3_03.cpp -o Ex3_03
+
+> ./Ex3_03
+
+2. Using Make
+--------------
+
+> make Ex3_03
+
+> ./Ex3_03
+
+3. Using CMake
+---------------
+
 > cmake .
 
 > make
@@ -48,9 +65,3 @@ Usage
 > ./Ex3_03
 
 
-Using G++ compiler
-------------------
-
-> g++ Ex3_03 -o Ex3_03
-
-> ./Ex3_03
