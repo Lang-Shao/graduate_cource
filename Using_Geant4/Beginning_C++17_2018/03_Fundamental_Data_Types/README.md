@@ -53,6 +53,8 @@ Usage
 
 > make Ex3_03
 
+(Typing just Ex3_03, and as .cpp is a standard file suffix for C++ sources, it will find Ex3_03.cpp and call the system's default C++ compilers.)
+
 > ./Ex3_03
 
 3. Using CMake

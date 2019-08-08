@@ -16,6 +16,8 @@ Usage
 
 > make Box
 
+(Typing just Box, and as .cpp is a standard file suffix for C++ sources, it will find Box.cpp and call the system's default C++ compilers.)
+
 > ./Box
 
 3. Using CMake

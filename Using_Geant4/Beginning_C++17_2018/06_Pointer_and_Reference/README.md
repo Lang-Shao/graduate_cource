@@ -20,6 +20,8 @@ Usage
 
 > make Ex6_03
 
+(Typing just Ex6_03, and as .cpp is a standard file suffix for C++ sources, it will find Ex6_03.cpp and call the system's default C++ compilers.)
+
 > ./Ex6_03
 
 3. Using CMake
