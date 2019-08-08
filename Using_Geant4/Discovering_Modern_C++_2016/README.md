@@ -45,3 +45,10 @@ add_executable(example example.cpp)
 > make
 
 > ./example
+
+4. Jupyter kernel for the C++
+------------------------------
+
+xeus-cling is a Jupyter kernel for C++ based on the C++ interpreter cling and the native implementation of the Jupyter protocol xeus.
+
+https://github.com/QuantStack/xeus-cling
