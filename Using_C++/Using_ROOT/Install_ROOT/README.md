@@ -46,10 +46,22 @@ MY STEPS on ubuntu 18.04:
 
 3. Setup environment and run ROOT
 
-put the following line in ~/.bashrc as in:
+for once put the following line in ~/.bashrc as in:
+
+> alias root_init='source ~/Software/ROOT/build/bin/thisroot.sh'
+
+use the following command in a new terminal to setup ROOT environment:
+
+> root_init
+
+To run ROOT GUI:
+
+> root
+
+(or simply for once put the following line in ~/.bashrc as in:
 
 > alias root_init='source ~/Software/ROOT/build/bin/thisroot.sh ; root'
 
-run the following command in a new terminal:
+)
 
-> root_init
+
