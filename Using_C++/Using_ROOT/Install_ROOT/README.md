@@ -44,6 +44,12 @@ MY STEPS on ubuntu 18.04:
 
 > make -j4
 
+where 4 is the number of parallel jobs you require (e.g. if your CPU only has a dual core processor, you could set 4 to 2).
+
+To know how many cores your CPU has:
+
+> cat /proc/cpuinfo | grep processor | wc -l
+
 3. Setup environment and run ROOT
 
 for once put the following line in ~/.bashrc as in:

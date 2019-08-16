@@ -171,7 +171,7 @@ simply execute make in the build directory:
 
 > make -jN  (DO NOT RUN THIS LINE DIRECTLY)
 
-where N is the number of parallel jobs you require (e.g. if your machine has a dual core processor, you could set N to 2).
+where N is the number of parallel jobs you require (e.g. if your CPU only has a dual core processor, you could set N to 2).
 
 my case:
 
