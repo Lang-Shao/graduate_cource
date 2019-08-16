@@ -106,6 +106,16 @@ add:
 
 151.101.184.249	global-ssl.fastly.net
 
-(find the latest ip's of above web addresses at: https://www.ipaddress.com/ )
+(To find the latest ip's of above web addresses at:
+
+https://www.ipaddress.com/
+
+or
+
+> nslookup global-ssl.fastly.net
+
+)
+
+then restart networking
 
 > sudo /etc/init.d/networking restart
