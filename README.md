@@ -89,3 +89,18 @@ try jupyter online
 ---------------------
 https://jupyter.org/try
 
+Issues
+--------
+
+Internet connection is too slow for 'git clone':
+
+https://blog.csdn.net/github_34965845/article/details/80610060
+
+> sudo gedit /etc/hosts
+
+add:
+192.30.253.112	github.com
+151.101.185.194	github.global.ssl.fastly.net 
+
+(find the latest ip's of above web addresses at: https://www.ipaddress.com/ )
+> sudo /etc/init.d/networking restart
