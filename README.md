@@ -102,7 +102,9 @@ add:
 
 192.30.253.112	github.com
 
-151.101.185.194	github.global.ssl.fastly.net 
+151.101.185.194	github.global.ssl.fastly.net
+
+151.101.184.249	global-ssl.fastly.net
 
 (find the latest ip's of above web addresses at: https://www.ipaddress.com/ )
 
