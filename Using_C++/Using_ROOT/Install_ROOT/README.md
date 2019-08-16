@@ -46,7 +46,7 @@ MY STEPS on ubuntu 18.04:
 
 3. Setup environment and run ROOT
 
-put this the following line in ~/.bashrc as in:
+put the following line in ~/.bashrc as in:
 
 > alias root_init='source ~/Software/ROOT/build/bin/thisroot.sh ; root'
 
