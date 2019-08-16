@@ -48,7 +48,7 @@ MY STEPS on ubuntu 18.04:
 
 put this the following line in ~/.bashrc as in:
 
-# alias root_init='source ~/Software/ROOT/build/bin/thisroot.sh ; root'
+> alias root_init='source ~/Software/ROOT/build/bin/thisroot.sh ; root'
 
 run the following command in a new terminal:
 
