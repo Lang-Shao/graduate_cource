@@ -90,9 +90,11 @@ Build options may be set by passing their name and value to the cmake command vi
 
 > cd /home/lang/Software/geant4/geant4.10.05.p01-build
 
-# put on the options for building the X11 OpenGL visualization driver and using QT
+- Put on the options for building the X11 OpenGL visualization driver with QT
 
-> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
+- Include Using GDML for geometry
+
+> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_USE_GDML=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
 * If you are using anaconda for other purpose, use:
 
