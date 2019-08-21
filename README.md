@@ -125,3 +125,5 @@ Linux Bash
 ----------
 
 http://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO.html#toc6
+
+https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php
