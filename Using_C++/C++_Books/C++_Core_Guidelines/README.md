@@ -31,6 +31,10 @@ https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#S-s
 `vector` and `array` containers
 ----------------
 
+	int v[SIZE];                        // BAD
+
+	std::array<int, SIZE> w;             // ok
+
 - To initialize a vector with a number of elements, use ()-initialization. To initialize a vector with a list of elements, use {}-initialization.
 
 	vector<int> v1(20);  // v1 has 20 elements with the value 0 (vector<int>{})
