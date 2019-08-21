@@ -119,3 +119,9 @@ or
 then restart networking
 
 > sudo /etc/init.d/networking restart
+
+
+Linux Bash
+----------
+
+http://tldp.org/HOWTO/Bash-Prog-Intro-HOWTO.html#toc6
