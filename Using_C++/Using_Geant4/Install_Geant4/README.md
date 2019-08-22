@@ -128,7 +128,7 @@ d. download SoQt-1.5.0.tar.gz at (Newer versions should NOT be used):
 
 https://bitbucket.org/Coin3D/coin/downloads/SoQt-1.5.0.tar.gz
 
-However,this step could not succeed and might not be needed at al.
+However, this step could not succeed and might not be needed at all.
 
 4. Installation of additional librairies:
 
