@@ -35,8 +35,23 @@ Pre-steps
 
 > sudo apt-get install cmake
 
+2. CLHEP library
 
-2. Visualization using OpenGL and Qt:
+Download 2.4.1.0 (needed by LHAASO/ihep) at:
+
+http://proj-clhep.web.cern.ch/proj-clhep/dist1/clhep-2.4.1.0.tgz
+
+> mkdir build
+
+> cd build
+
+> cmake ../CLHEP
+
+> make
+
+> sudo make all install
+
+3. Visualization using OpenGL and Qt:
 
 a. Install X11
 
@@ -68,7 +83,7 @@ Install:
 
 > sudo apt install qt5-default
 
-3. Visualization using OpenInventor (which is needed by LHAASO/ihep) with Coin3D
+4. Visualization using OpenInventor (which is needed by LHAASO/ihep) with Coin3D
 
 a. download simage-1.7.1-src.zip at:
 
@@ -124,13 +139,21 @@ This step has be wait after Coin has been installed.
 
 > make clean [optional]
 
+make sure /usr/local/lib is in your LD_LIBRARY_PATH:
+
+> echo $LD_LIBRARY_PATH
+
+if not, add the following line in your .bashrc
+
+> export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
 d. download SoQt-1.5.0.tar.gz at:
 
 https://bitbucket.org/Coin3D/coin/downloads/SoQt-1.5.0.tar.gz
 
 However, this step could not succeed and might not be needed at all, since it appears to use QT4, but we have already install QT5 above.
 
-4. Installation of additional librairies:
+5. Installation of additional librairies:
 
 > sudo apt-get install libfontconfig1 libfontconfig1-dev libfreetype6-dev libx11-dev libxcursor-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxrandr-dev libxrender-dev
 
@@ -159,7 +182,9 @@ Build options may be set by passing their name and value to the cmake command vi
 
 - Include Using GDML for geometry
 
-> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_USE_INVENTOR=ON -DGEANT4_USE_RAYTRACER_X11=ON -DGEANT4_USE_GDML=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
+- GEANT4_USE_SYSTEM_CLHEP=ON: required by LHAASO/ihep
+
+> cmake -DCMAKE_INSTALL_PREFIX=/home/lang/Software/geant4/geant4.10.05.p01-install -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_SYSTEM_CLHEP=ON -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_USE_INVENTOR=ON -DGEANT4_USE_RAYTRACER_X11=ON -DGEANT4_USE_GDML=ON -DGEANT4_INSTALL_DATA=ON -DEXPAT_LIBRARY=/usr/lib/x86_64-linux-gnu/libexpat.so ../geant4.10.05.p01
 
 * If you are using anaconda for other purpose, use:
 
@@ -179,6 +204,8 @@ GEANT4_BUILD_MULTITHREADED: Build multithread enabled libraries
 
 GEANT4_BUILD_TLS_MODEL: Building with TLS model 'initial-exec'
 
+GEANT4_USE_SYSTEM_CLHEP: Using system CLHEP library (singular)
+
 GEANT4_USE_SYSTEM_EXPAT: Using system EXPAT library
 
 GEANT4_USE_GDML: Building Geant4 with GDML support
@@ -190,6 +217,7 @@ GEANT4_USE_QT: Build Geant4 with Qt support
 GEANT4_USE_RAYTRACER_X11: Build RayTracer driver with X11 support
 
 GEANT4_USE_OPENGL_X11: Build Geant4 OpenGL driver with X11 support
+
 
 -- Configuring done
 
