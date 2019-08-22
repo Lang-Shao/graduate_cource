@@ -124,11 +124,11 @@ This step has be wait after Coin has been installed.
 
 > make clean [optional]
 
-d. download SoQt-1.5.0.tar.gz at (Newer versions should NOT be used):
+d. download SoQt-1.5.0.tar.gz at:
 
 https://bitbucket.org/Coin3D/coin/downloads/SoQt-1.5.0.tar.gz
 
-However, this step could not succeed and might not be needed at all.
+However, this step could not succeed and might not be needed at all, since it appears to use QT4, but we have already install QT5 above.
 
 4. Installation of additional librairies:
 
