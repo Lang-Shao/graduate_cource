@@ -68,7 +68,7 @@ Install:
 
 > sudo apt install qt5-default
 
-3. [Optional] Visualization using OpenInventor with Coin3D (a free implementation of Open Inventor)
+3. Visualization using OpenInventor (which is needed by LHAASO/ihep) with Coin3D
 
 a. download simage-1.7.1-src.zip at:
 
