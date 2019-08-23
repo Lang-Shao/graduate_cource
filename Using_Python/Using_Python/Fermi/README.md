@@ -11,23 +11,6 @@ https://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi
 
 Full steps for installing fermitool and fermipy
 
-==========
-
-https://www.anaconda.com/distribution/
-Download python 3 version with command line installer version
-bash Anaconda3-2019.03-Linux-x86_64.sh
-conda update conda
-conda update anaconda
-
-
-conda config --show | grep auto_activate_base
-
-If you do not want conda to auto activate its base environment:
-
-conda config --set auto_activate_base False
-
-==========
-
 https://github.com/fermi-lat/Fermitools-conda/wiki/Quickstart-Guide
 Once you have downloaded and installed Anaconda, use the following command to download and setup your Fermitools environment:
 

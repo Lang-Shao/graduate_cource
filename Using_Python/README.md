@@ -3,6 +3,10 @@ Tips for conda
 
 https://www.anaconda.com/distribution/
 
+Download python 3 version with command line installer version
+
+bash Anaconda3-2019.03-Linux-x86_64.sh
+
 - update 
 
 > conda update conda
@@ -10,6 +14,17 @@ https://www.anaconda.com/distribution/
 > conda update anaconda
 
 > conda update conda-build # in case conda-build raises warnings
+
+
+
+
+- If you do not want conda to auto activate its base environment:
+
+> conda config --set auto_activate_base False
+
+To review your selection:
+
+> conda config --show | grep auto_activate_base
 
 - list environment
 
