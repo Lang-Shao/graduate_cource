@@ -63,7 +63,13 @@ To review your selection:
 
 > conda install -c anaconda basemap 
 
+> conda install -c conda-forge pymc3
+
 > conda install -c r rpy2 
+
+- update a package from a given channel
+
+> conda update -c conda-forge pymc3
 
 try jupyter online
 ---------------------
