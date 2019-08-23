@@ -3,24 +3,37 @@ Tips for conda
 
 https://www.anaconda.com/distribution/
 
-conda update conda
+- update 
 
-conda update anaconda
+> conda update conda
 
-conda update conda-build # in case conda-build raises warnings
+> conda update anaconda
 
+> conda update conda-build # in case conda-build raises warnings
 
-conda create --name myenv
+- list environment
 
-conda create -n myenv # the same
+> conda-env list
 
-conda list
+- list the packages in current environment:
+
+> conda list
+
+- create environment
+
+> conda create --name myenv
+
+> conda create -n myenv # the same
+
+- activate an environment
 
 conda activate myenv # activate into an environment
 
 conda activate  # back to conda base environment
 
 conda deactivate # log out of conda to use system python environment
+
+- install a package in current environment
 
 conda install packname # run in given environment
 
@@ -29,7 +42,6 @@ conda uninstall packname # run in given environment to remove the unwanted packa
 conda install --channel channelname <package>
 
 conda install -c channelname <package> # the same
-
 
 conda install -c anaconda jupyter
 
