@@ -59,6 +59,10 @@ sys.setdefaultencoding('utf-8')
 export LANG=en_US:UTF-8
 export LANGUAGE=en_US:en
 
+ - Using the following line in ~/.bashrc:
+
+alias jupyter_init="export LANG=en_US:UTF-8; export LANGUAGE=en_US:en"
+
 =========
 
 issue note on July 18, 2019:
