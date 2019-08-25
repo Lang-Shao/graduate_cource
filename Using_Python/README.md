@@ -13,6 +13,8 @@ https://www.anaconda.com/distribution/
 
 > conda update anaconda
 
+> conda update --all
+
 > conda update conda-build # in case conda-build raises warnings
 
 - If you do not want conda to auto activate its base environment:
