@@ -59,6 +59,8 @@ To review your selection:
 
 > conda install -c channelname <package> # the same
 
+- exmaple:
+
 > conda install -c anaconda jupyter
 
 > conda install -c conda-forge spherical-geometry
@@ -66,6 +68,8 @@ To review your selection:
 > conda install -c anaconda basemap 
 
 > conda install -c conda-forge pymc3
+
+> conda install -c r r 
 
 > conda install -c r rpy2 
 
