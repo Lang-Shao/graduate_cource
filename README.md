@@ -16,9 +16,15 @@ $ gedit ~/.gitignore and add:
 
 *.pyc
 
+*.txt
+
 \_\_pycache\_\_/
 
 .ipynb_checkpoints/
+
+results/
+
+bad_sample/
 
 
 $ git config --global credential.helper cache
