@@ -18,6 +18,8 @@ $ gedit ~/.gitignore and add:
 
 *.txt
 
+*.eps
+
 \_\_pycache\_\_/
 
 .ipynb_checkpoints/
