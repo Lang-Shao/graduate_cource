@@ -51,6 +51,11 @@ $ git push
 
 $ git pull
 
+Git on windows
+-----------------
+
+https://git-scm.com/download/win
+
 
 Issues
 --------
