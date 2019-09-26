@@ -79,4 +79,10 @@ To review your selection:
 
 try jupyter online
 ---------------------
+
 https://jupyter.org/try
+
+Setup Jupyter notebook default folder in Anaconda
+---------------------------------------------------
+
+http://darques.eu/blog/index.php/2017/08/25/setup-jupyter-notebook-default-folder-in-anaconda/
