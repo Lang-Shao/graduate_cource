@@ -6,7 +6,7 @@ import sys
 from ftplib import FTP_TLS as FTP
 from glob import glob
 from multiprocessing import Pool
-nthread=60
+nthread=50
 
 #=============================================
 downmethod=2
@@ -21,7 +21,7 @@ downyearlist=['2018']
 #	downmonthlist=['201808']
 # to run check by month
 # downmethod=2
-downmonthlist=['201906','201907','201908','201909']
+downmonthlist=['201908']#,'201909']#'201907','201908','201909']
 
 # 3: provide daylist as in
 #	downdaylist=['20130427','20150314']
