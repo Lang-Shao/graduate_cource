@@ -10,6 +10,7 @@ issues:
 add:
 
 \* soft nofile 10240
+
 \* hard nofile 10240
 
 then
