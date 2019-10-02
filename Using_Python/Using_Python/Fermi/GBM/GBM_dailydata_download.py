@@ -21,7 +21,7 @@ downyearlist=['2018']
 #	downmonthlist=['201808']
 # to run check by month
 # downmethod=2
-downmonthlist=['201908']#,'201909']#'201907','201908','201909']
+downmonthlist=['201906','201907','201908','201909']
 
 # 3: provide daylist as in
 #	downdaylist=['20130427','20150314']
@@ -93,6 +93,7 @@ def movefile(filedir,targetdir):
 # method 1: function for checking files provided in a yearlist
 def check_year(downyearlist):
 	f.login()
+	f.prot_p()
 	for year in downyearlist:
 		myyearlist=os.listdir(mydatabase)
 		if not year in myyearlist:
@@ -246,6 +247,7 @@ def check_year_month(downmonthlist):
 def check_year_month_day(downdaylist):
 	for downdaystring in downdaylist:
 		f.login()
+		f.prot_p()
 		year=downdaystring[:4]
 		month=downdaystring[4:6]
 		day=downdaystring[6:8]
