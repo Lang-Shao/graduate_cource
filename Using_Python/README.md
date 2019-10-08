@@ -9,11 +9,11 @@ https://www.anaconda.com/distribution/
 
 - update 
 
-> conda update conda
-
-> conda update anaconda
-
 > conda update --all
+
+(> conda update conda)
+
+(> conda update anaconda)
 
 > conda update conda-build # in case conda-build raises warnings
 
@@ -61,9 +61,11 @@ To review your selection:
 
 - exmaple:
 
+> conda install python=3.6
+
 > conda install -c anaconda jupyter
 
-> conda install -c conda-forge spherical-geometry
+> conda install -c conda-forge spherical-geometry (not recommended, incompatible with others)
 
 > conda install -c anaconda basemap 
 
@@ -71,11 +73,12 @@ To review your selection:
 
 > conda install -c r r 
 
-> conda install -c r rpy2 
+> conda install -c r rpy2 (incompatible with basemap, better create a new environment)
 
 - update a package from a given channel
 
 > conda update -c conda-forge pymc3
+
 
 try jupyter online
 ---------------------

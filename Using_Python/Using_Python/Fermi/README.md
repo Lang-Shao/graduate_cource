@@ -58,12 +58,18 @@ sys.setdefaultencoding('utf-8')
 export LANG=en_US:UTF-8
 export LANGUAGE=en_US:en
 
- - Using the following line in ~/.bashrc:
+ Using the following line in ~/.bashrc:
 
 > alias jupyter_init="export LANG=en_US:UTF-8; export LANGUAGE=en_US:en"
 
-Issue note on July 18, 2019:
+- Issue note on July 18, 2019:
 
 KeyError: 'PROJ_LIB' when: from mpl_toolkits.basemap import Basemap
 
 > export PROJ_LIB=$CONDA_PREFIX/share/proj  # Linux and OS X
+
+- Issue note on Oct. 8, 2019:
+
+FileNotFoundError: [Errno 2] No such file or directory: '.../proj/epsg''
+
+> conda install -c conda-forge proj4

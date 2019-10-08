@@ -19,3 +19,9 @@ then
 
 > ulimit -a
 
+* ImportError: libiconv.so.2: cannot open shared object file: No such file or directory
+
+> conda activate gbm
+
+> conda install -c r libiconv
+
