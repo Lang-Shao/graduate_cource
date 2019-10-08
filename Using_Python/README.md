@@ -67,7 +67,7 @@ To review your selection:
 
 > conda install -c anaconda jupyter
 
-> conda install -c conda-forge spherical-geometry (not recommended, incompatible with others)
+> conda install -c conda-forge spherical-geometry
 
 > conda install -c anaconda basemap 
 
@@ -75,7 +75,7 @@ To review your selection:
 
 > conda install -c r r 
 
-> conda install -c r rpy2 (incompatible with basemap, better create a new environment)
+> conda install -c r rpy2
 
 - update a package from a given channel
 
