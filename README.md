@@ -20,6 +20,10 @@ $ gedit ~/.gitignore and add:
 
 *.eps
 
+*.fit
+
+*.fits
+
 \_\_pycache\_\_/
 
 .ipynb_checkpoints/
@@ -28,6 +32,9 @@ results/
 
 bad_sample/
 
+[on windows: git config --global core.excludesfile "%USERPROFILE%\.gitignore"
+
+and the file should be at C:\User\Administrator\.gitignore]
 
 $ git config --global credential.helper cache
 
