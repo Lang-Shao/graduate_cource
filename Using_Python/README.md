@@ -11,6 +11,8 @@ https://www.anaconda.com/distribution/
 
 > conda update --all
 
+> conda update -n base -c defaults conda
+
 (> conda update conda)
 
 (> conda update anaconda)
