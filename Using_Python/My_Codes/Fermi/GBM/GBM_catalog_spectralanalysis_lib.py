@@ -1,5 +1,4 @@
 # General analyses of GBM catalog bursts 
-import warnings
 import os
 import sys
 import time
@@ -27,8 +26,9 @@ from astropy.time import Time
 from astropy.stats import bayesian_blocks
 from astropy.stats import sigma_clip, mad_std
 from astropy.coordinates import SkyCoord
-from rpy2.rinterface import RRuntimeWarning
-warnings.filterwarnings("ignore", category=RRuntimeWarning)
+from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
+import logging
+rpy2_logger.setLevel(logging.ERROR) 
 import rpy2.robjects as robjects
 from rpy2.robjects import r
 import rpy2.robjects.numpy2ri
@@ -495,8 +495,8 @@ class GRB:
 						+",it=10,int="+fillPeak_int+",method='fillPeaks')")
 					r("bs=getBaseline(rbase)")
 					r("cs=getCorrected(rbase)")
-					bs = r('bs')[0]
-					cs = r('cs')[0]
+					bs = np.array(r('bs'))[0]
+					cs = np.array(r('cs'))[0]
 					# correct negative base to 0 and recover the net value to original rate
 					corrections_index = (bs < 0)
 					bs[corrections_index] = 0
