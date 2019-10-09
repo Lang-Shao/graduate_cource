@@ -46,4 +46,4 @@ if __name__ == '__main__':
     #main()
     cdir = os.getcwd()
     resultdir = cdir+'/results/'
-    inspect_GRB('bn190114873',resultdir)
+    inspect_GRB('bn180720598',resultdir)
