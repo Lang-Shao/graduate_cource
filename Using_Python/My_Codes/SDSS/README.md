@@ -5,6 +5,8 @@ https://www.sdss.org/
 
 https://dr15.sdss.org/sas/dr15/
 
+https://dr15.sdss.org/sas/dr15/sdss/spectro/redux/specObj-dr14.fits
+
 
 Release paper:
 
