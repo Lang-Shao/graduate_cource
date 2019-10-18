@@ -3,10 +3,10 @@
 import os
 import ast
 import sys
-from ftplib import FTP
+from ftplib import FTP_TLS as FTP
 from glob import glob
 from multiprocessing import Pool
-nthread=40
+nthread=60
 
 #downburstlist=['bn091010113','bn101208498','bn120129580','bn120323507','bn120624309','bn130310840','bn140508128','bn180113011','bn180703949','bn181119606']
 downburstlist=['bn190114873']
@@ -40,6 +40,7 @@ for downburst in downburstlist:
 	if os.path.exists(mydatabase+year)== False:
 		os.makedirs(mydatabase+year)
 	f.login()
+	f.prot_p()
 	f.cwd(fermidatabase+year+'/'+downburst+'/current/')
 	files=f.nlst()
 	with open(filelistdir+'list.txt','w') as newlistfile:
