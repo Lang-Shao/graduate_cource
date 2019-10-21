@@ -28,6 +28,8 @@ $ gedit ~/.gitignore and add:
 
 .ipynb_checkpoints/
 
+.Rhistory
+
 results/
 
 bad_sample/
