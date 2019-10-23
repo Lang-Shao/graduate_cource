@@ -73,7 +73,7 @@ To review your selection:
 
 > conda install python=3.6
 
-> conda install -c anaconda jupyter
+> conda install jupyter
 
 > conda install -c conda-forge spherical-geometry
 
