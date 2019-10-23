@@ -26,14 +26,17 @@ from astropy.time import Time
 from astropy.stats import bayesian_blocks
 from astropy.stats import sigma_clip, mad_std
 from astropy.coordinates import SkyCoord
-from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
-import logging
-rpy2_logger.setLevel(logging.ERROR) 
-import rpy2.robjects as robjects
+#supress rpy2 warnings
+import warnings
+from rpy2.rinterface import RRuntimeWarning
+warnings.filterwarnings("ignore", category=RRuntimeWarning)
+#from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
+#import logging
+#rpy2_logger.setLevel(logging.ERROR) 
 from rpy2.robjects import r
-import rpy2.robjects.numpy2ri
-robjects.numpy2ri.activate()
-robjects.r("library(baseline)")
+from rpy2.robjects import numpy2ri
+r("library(baseline)")
+numpy2ri.activate()
 from xspec import *
 from personal_settings import *
 
