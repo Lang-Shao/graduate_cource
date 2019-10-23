@@ -9,11 +9,9 @@ https://www.anaconda.com/distribution/
 
 - update 
 
-> conda update --all
+> conda update conda # updating conda itself
 
-> conda update -n base -c defaults conda
-
-(> conda update conda)
+(> conda update -n base -c defaults conda)
 
 (> conda update anaconda)
 
@@ -29,7 +27,9 @@ To review your selection:
 
 - list environment
 
-> conda-env list
+> conda info --envs
+
+> conda-env list # the same
 
 - list the packages in current environment:
 
@@ -48,6 +48,14 @@ To review your selection:
 > conda activate  # back to conda base environment
 
 > conda deactivate # log out of conda to use system python environment
+
+- exporting an environment file
+
+> conda env export > $file_name
+
+- creating an environment from a file
+
+> conda env create -f $file_name
 
 - install a package in current environment
 
