@@ -12,6 +12,7 @@ def inspect_GRB(pars):
 		grb.base(baset1=-50,baset2=300,binwidth=0.064) #MUST RUN
 		grb.plot_gaussian_significance_net_rate()
 		grb.check_pulse()
+		grb.plot_significance_lightcurve()
 		grb.countmap()
 		#remove basedir to save disk space
 		#grb.removebase()

@@ -906,6 +906,57 @@ class GRB:
 			plt.close()
 			f.close()
 
+
+# plot significant light curve based on guassian background: (rate-loc)/scale
+
+	def plot_significance_lightcurve(self,viewt1=-50,viewt2=300,sigma=3):
+		if not os.path.exists(self.resultdir+'/significance_lightcurve.png'):
+			assert os.path.exists(self.baseresultdir), ('Should have run base() '
+						'before running check_pulse()!')
+			viewt1 = np.max([self.baset1,viewt1])
+			viewt2 = np.min([self.baset2,viewt2])
+			f = h5py.File(self.baseresultdir+'/base.h5',mode='r')
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=True)	
+			ylim = np.zeros((14,2))							
+			for i in range(14):
+				cNet = np.array([ f['/'+Det[i]+'/ch'+str(ch)][()][2] 
+							for ch in np.arange(ch1,ch2+1) ])
+				totalNet = np.sum(cNet,axis=0)
+				#clip the outliers and fit the central median part
+				mask = sigma_clip(totalNet,sigma=5,maxiters=5,stdfunc=mad_std).mask
+				myfilter = list(map(operator.not_, mask))
+				totalNet_median_part = totalNet[myfilter]
+				loc,scale = stats.norm.fit(totalNet_median_part)
+				Y = stats.norm(loc=0,scale=1)
+				gaussian_level = Y.interval(norm_pvalue(sigma))
+				significance = (totalNet-loc)/scale
+				significance = np.concatenate(([significance[0]],significance))
+				axes[i//2,i%2].plot(self.tbins,significance,drawstyle='steps',
+									lw=3.0,color='tab:blue')
+				axes[i//2,i%2].axhline(gaussian_level[1],
+					ls='--',lw=3,color='orange',
+					label=str(sigma)+'$\sigma$ level of gaussian background')
+				axes[i//2,i%2].tick_params(labelsize=25)
+
+				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+								transform=axes[i//2,i%2].transAxes)
+				#ylim[i] = axes[i//2,i%2].get_ylim()
+
+			#maxylim = np.max(ylim)	
+			max_ylim = axes[0,1].get_ylim()
+			axes[0,1].set_ylim([0,max_ylim[1]])
+			axes[0,1].set_xlim([viewt1,viewt2])
+			axes[0,1].legend(fontsize=20)
+			fig.text(0.07, 0.5, r'Significance ($\sigma$)', ha='center',
+					va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'Time (s)', ha='center',
+							va='center',fontsize=30)
+			fig.text(0.5, 0.92, self.bnname, ha='center',
+							va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/significance_lightcurve.png')
+			plt.close()
+			f.close()
 			
 	def check_poisson_rate(self):
 		if not os.path.exists(self.resultdir+'/poisson_rate/'):
