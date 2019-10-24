@@ -70,7 +70,7 @@ def timer(func):
 		value=func(*args,**kwargs)
 		end_time=time.perf_counter()
 		run_time=end_time-start_time
-		print(f"Finished {func.__name__!r} for",args[0][0]," in {run_time:.4f} sec")
+		print(f"Finished {func.__name__!r} for {args[0][0]} in {run_time:.4f} sec")
 		return value
 	return wrapper_timer
 
