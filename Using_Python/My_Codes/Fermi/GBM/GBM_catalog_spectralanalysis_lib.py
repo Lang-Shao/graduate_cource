@@ -635,6 +635,55 @@ class GRB:
 			plt.close()
 			f.close()
 
+	def plot_gaussian_significance_net_rate(self,sigma=3):
+		if not os.path.exists(self.resultdir+'/gaussian_significance_net_rate.png'):
+			assert os.path.exists(self.baseresultdir), ('Should have run base() '
+							'before running check_gaussian_net_rate()!')
+			f = h5py.File(self.baseresultdir+'/base.h5',mode='r')
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=False,sharey=False)
+			for i in range(14):
+				cNet = np.array([ f['/'+Det[i]+'/ch'+str(ch)][()][2] 
+									for ch in np.arange(ch1,ch2+1) ])
+				totalNet = np.sum(cNet,axis=0)
+				#clip the outliers and fit the central median part
+				mask = sigma_clip(totalNet,sigma=5,maxiters=5,stdfunc=mad_std).mask
+				myfilter = list(map(operator.not_, mask))
+				totalNet_median_part = totalNet[myfilter]
+				loc,scale = stats.norm.fit(totalNet_median_part)
+				significance = (totalNet_median_part - loc) / scale
+				bins = np.arange((totalNet.min()-loc)/scale,(totalNet.max()-loc)/scale,
+					(totalNet_median_part.max()-totalNet_median_part.min()-loc)/scale/25)
+				histvalue, histbin = np.histogram((totalNet-loc)/scale,bins=bins)
+				histvalue = np.concatenate(([histvalue[0]],histvalue))
+				axes[i//2,i%2].fill_between(histbin,histvalue,step='pre',
+												label='Observed net rate')
+				Y = stats.norm(loc=0,scale=1)
+				x = np.linspace((totalNet_median_part.min()-loc)/scale,
+								(totalNet_median_part.max()-loc)/scale,
+								num=100)
+				axes[i//2,i%2].plot(x,Y.pdf(x)*totalNet.size*(bins[1]-bins[0]),
+							label='Gaussian Distribution within clipped region',
+							linestyle='--',lw=3.0,color='tab:orange')
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.5,0.8,Det[i],fontsize=25,
+								transform=axes[i//2,i%2].transAxes)
+				gaussian_level = Y.interval(norm_pvalue(sigma))
+				axes[i//2,i%2].axvline(gaussian_level[0],ls='--',lw=2,
+							color='green',label=str(sigma)+'$\sigma$ level')
+				axes[i//2,i%2].axvline(gaussian_level[1],ls='--',lw=2,
+							color='green')
+				if i == 1:
+					axes[i//2,i%2].legend(fontsize=20)
+			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
+									rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'Total net rate (s$^{-1}$; between'
+						+str(self.baset1)+'--'+str(self.baset2)+'s)',
+						ha='center', va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/gaussian_significance_net_rate.png')
+			plt.close()
+			f.close()
+
 	def plot_gaussian_level_over_net_lc(self,viewt1=-50,viewt2=300,sigma=3):
 		if not os.path.exists(self.resultdir+'/gaussian_level_over_net_lc.png'):
 			assert os.path.exists(self.baseresultdir), ('Should have run base() '
