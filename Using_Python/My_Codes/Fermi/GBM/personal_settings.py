@@ -15,8 +15,3 @@ def get_dailydatabasedirs():
 	dailydatabasedir_b = '/diskb/Database/Fermi/Fermi_GBM_daily/data/'
 	#dailydatabasedir = '/home/lang/work/GBM/daily/data/'
 	return dailydatabasedir_a, dailydatabasedir_b
-
-def get_ncore():
-	ncore = 3
-	#ncore = 82
-	return ncore

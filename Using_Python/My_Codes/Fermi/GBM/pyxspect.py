@@ -2,8 +2,9 @@ from GBM_catalog_spectralanalysis_lib import *
 import matplotlib
 matplotlib.use('Agg')
 
-
-def inspect_GRB(bnname,resultdir):
+@timer
+def inspect_GRB(pars):
+	bnname, resultdir = pars
 	grb = GRB(bnname,resultdir)
 	if grb.dataready:
 		#currently useful
@@ -48,4 +49,11 @@ if __name__ == '__main__':
 	#main()
 	cdir = os.getcwd()
 	resultdir = cdir+'/results/'
-	inspect_GRB('bn190829830',resultdir)
+	bn = ['bn180720598','bn190829830']
+	ncore = set_ncore()
+	p = Pool(ncore)
+	total_num = len(bn)
+	p.map(inspect_GRB, zip(bn,[resultdir]*total_num))
+	#for bn in ['bn180720598','bn190829830']:
+	#	print('Processing: ',bn)
+	#	inspect_GRB(bn,resultdir)

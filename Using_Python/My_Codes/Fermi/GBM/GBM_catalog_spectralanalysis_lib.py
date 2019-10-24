@@ -48,23 +48,29 @@ Det = ['b0','b1','n0','n1','n2','n3','n4','n5','n6','n7','n8','n9','na','nb']
 #ignore 0,1,2,125,126,127, notice 3-124
 ch1 = 3
 ch2 = 124
-ncore = get_ncore()
-
 
 ##################
 # SOME FUNCTIONS #
 ##################
 
+def set_ncore():
+	Ncore = os.cpu_count()
+	if Ncore < 10:
+		use_ncore = Ncore - 1
+	else:
+		use_ncore = Ncore - 2
+	return use_ncore
+
 def timer(func):
 	"""Print the runtime of the decorated function"""
 	@functools.wraps(func)
 	def wrapper_timer(*args,**kwargs):
-		print(f"Running {func.__name__!r} ...")
+		print(f"Running {func.__name__!r} for:",args[0][0],"...")
 		start_time=time.perf_counter()
 		value=func(*args,**kwargs)
 		end_time=time.perf_counter()
 		run_time=end_time-start_time
-		print(f"Finished {func.__name__!r} in {run_time:.4f} sec")
+		print(f"Finished {func.__name__!r} for",args[0][0]," in {run_time:.4f} sec")
 		return value
 	return wrapper_timer
 
