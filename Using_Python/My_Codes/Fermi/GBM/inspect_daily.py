@@ -4,8 +4,8 @@ matplotlib.use('Agg')
 
 @timer
 def inspect_timewindow(winname, StartUTC, EndUTC, resultdir='./'):
-	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir='./')
-	slice1.plot_rawlc_gen_GTI()
+	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir=resultdir)
+	slice1.plot_rawlc()
 
 
 ############

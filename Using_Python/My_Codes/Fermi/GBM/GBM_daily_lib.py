@@ -129,7 +129,7 @@ def met2utc(myMET):
 
 class TIMEWINDOW:
 
-	def __init__(self, winname, StartUTC, EndUTC, resultdir='./'):
+	def __init__(self, winname, StartUTC, EndUTC, resultdir='./results'):
 		self.winname = winname
 		self.Startmet = utc2met([StartUTC])[0]
 		self.Endmet = utc2met([EndUTC])[0]
@@ -143,6 +143,7 @@ class TIMEWINDOW:
 		if os.path.exists(self.datadir+'/data.h5')== False:
 			f = h5py.File(self.datadir+'/data.h5',mode='w')
 			for i in range(14):
+				f.create_group(Det[i])
 				timeforsave = np.array([])
 				chforsave = np.array([])
 				for hourstr in hourlist:
@@ -170,17 +171,52 @@ class TIMEWINDOW:
 							ch=ch[ch_index]
 							if len(time)>1:
 								timeforsave = np.concatenate([timeforsave, time])
-								chforsave = np.concatenate([chforsave, ch])
-				f[Det[i]] = np.array([timeforsave,chforsave])
+								chforsave = np.int8(np.concatenate([chforsave, ch]))
+				f['/'+Det[i]+'/time'] = timeforsave
+				f['/'+Det[i]+'/ch'] = chforsave
 			f.flush()
 			f.close()
 	
-	def plot_rawlc_gen_GTI(self):
+	def plot_rawlc(self, binwidth=0.064):
+		if not os.path.exists(self.resultdir+'/raw_lc.png'):
+			f = h5py.File(self.datadir+'/data.h5',mode='r')
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=False)
+			for i in range(14):
+				time = f['/'+Det[i]+'/time'][()]
+				viewt1 = np.min(time)
+				viewt2 = np.max(time)
+				tbins = np.arange(viewt1,viewt2+binwidth,binwidth)
+				histvalue, histbin = np.histogram(time,bins=tbins)
+				plotrate = histvalue/binwidth
+				plotrate = np.concatenate(([plotrate[0]],plotrate))
+				axes[i//2,i%2].plot(histbin,plotrate,drawstyle='steps')
+				axes[i//2,i%2].set_xlim([viewt1,viewt2])
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+									transform=axes[i//2,i%2].transAxes)
+			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
+						va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'Time (s)', ha='center',
+								va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/raw_lc.png')
+			plt.close()
+			f.close()
+
+	def base(self,binwidth=0.064):
 		f = h5py.File(self.datadir+'/data.h5',mode='r')
 		for i in range(14):
-			data = f['/'+Det[i]]
-			print(data)
+			time = f['/'+Det[i]+'/time'][()]
+			ch = f['/'+Det[i]+'/ch'][()]
+			viewt1 = np.min(time)
+			viewt2 = np.max(time)
+			for chno in np.arange(CH1,CH2+1):
+				time_selected = time[ch==chno]
+				time_selected.sort()
+				GTI0_t1 = time_selected[0]
+				GTI0_t1 = time_selected[0]
 
+# ***********************old************************
 
 # https://en.wikipedia.org/wiki/Normal_distribution
 def norm_pvalue(sigma):
