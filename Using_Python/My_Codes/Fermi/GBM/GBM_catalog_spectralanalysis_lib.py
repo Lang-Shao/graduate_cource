@@ -26,10 +26,11 @@ from astropy.time import Time
 from astropy.stats import bayesian_blocks
 from astropy.stats import sigma_clip, mad_std
 from astropy.coordinates import SkyCoord
-#supress rpy2 warnings
+#supress rpy2 warnings for rpy2<3.0
 import warnings
 from rpy2.rinterface import RRuntimeWarning
 warnings.filterwarnings("ignore", category=RRuntimeWarning)
+#supress rpy2 warnings for rpy2>=3.0
 #from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
 #import logging
 #rpy2_logger.setLevel(logging.ERROR) 
@@ -40,7 +41,7 @@ numpy2ri.activate()
 from xspec import *
 from personal_settings import *
 
-databasedir = get_databasedir()
+databasedir = get_burstdatabasedir()
 NaI = ['n0','n1','n2','n3','n4','n5','n6','n7','n8','n9','na','nb']
 BGO = ['b0','b1']
 Det = ['b0','b1','n0','n1','n2','n3','n4','n5','n6','n7','n8','n9','na','nb']
@@ -74,92 +75,21 @@ def timer(func):
 		return value
 	return wrapper_timer
 
-def open_fit(file_link):
-	f = fits.open(file_link)
-	time = f[1].data.field(0)
-	qsj1 = f[1].data.field(1)
-	qsj2 = f[1].data.field(2)
-	qsj3 = f[1].data.field(3)
-	qsj4 = f[1].data.field(4)
-	pos_x = f[1].data.field(8)
-	pos_y = f[1].data.field(9)
-	pos_z = f[1].data.field(10)
-	return time,qsj1,qsj2,qsj3,qsj4,pos_x,pos_y,pos_z
-
-def find_right_list(file_link, met):
-	time,qsj1,qsj2,qsj3,qsj4,pos_x,pos_y,pos_z = open_fit(file_link)
-	dt = (time - met)**2
-	dt = np.array(dt)
-	dtmin=dt.min()
-	if dtmin >= 1: 
-		qsj, pos = None, None
-	else:
-		index = np.where(dt == dtmin)
-		qsj = np.array([qsj1[index][0],qsj2[index][0],qsj3[index][0],qsj4[index][0]])
-		pos = np.array([pos_x[index][0],pos_y[index][0],pos_z[index][0]])
-	return qsj, pos
-
-def met2utc_shao(myMET):
-	UTC0 = Time('2001-01-01',format='iso',scale='utc')
-	if isinstance(myMET,(list,tuple,np.ndarray)):
-		myMETsize = len(myMET)
-		utc_tt_diff = np.zeros(myMETsize)
-		#from Fermi MET to UTC
-		# 4 leap seconds after 2007:
-		#'2008-12-31 23:59:60' MET=252460801.000000
-		#'2012-06-30 23:59:60' MET=362793602.000000
-		#'2015-06-30 23:59:60' MET=457401603.000000
-		#'2016-12-31 23:59:60' MET=504921604.000000
-		for i in range(myMETsize):
-			if myMET[i] < 237693816.736: # valid data start at 2008-07-14 02:03:35.737
-				print('**** ERROR: value Met must be larger than 237693816.736!!! ****')
-			elif myMET[i] <= 252460801.000:
-				utc_tt_diff[i] = 33.0
-			elif myMET[i] <= 362793602.000:
-				utc_tt_diff[i] = 34.0
-			elif myMET[i] <= 457401603.000:
-				utc_tt_diff[i] = 35.0
-			elif myMET[i] <= 504921604.000:
-				utc_tt_diff[i] = 36.0
-			else:
-				utc_tt_diff[i] = 37.0
-		myTimeGPS = Time(np.array(myMET)+UTC0.gps-utc_tt_diff,format='gps')
-		return myTimeGPS.iso
-	elif np.isscalar(myMET):
-		if myMET < 237693816.736: # # valid data start at 2008-07-14 02:03:35.737
-			print('**** ERROR: value Met must be larger than 237693816.736!!! ****')
-		elif myMET <= 252460801.000:
-			utc_tt_diff = 33.0
-		elif myMET <= 362793602.000:
-			utc_tt_diff = 34.0
-		elif myMET <= 457401603.000:
-			utc_tt_diff = 35.0
-		elif myMET <= 504921604.000:
-			utc_tt_diff = 36.0
-		else:
-			utc_tt_diff = 37.0
-		myTimeGPS = Time(myMET+UTC0.gps-utc_tt_diff,format='gps')
-		return myTimeGPS.iso
-	else:
-		print('Check your input format!')
-		return None
-
-Det_pointing=[SkyCoord(45.89, 90-20.58, unit='deg'),
-			SkyCoord(45.11, 90-45.31, unit='deg'),
-			SkyCoord(58.44, 90-90.21, unit='deg'),
-			SkyCoord(314.87, 90-45.24, unit='deg'),
-			SkyCoord(303.15, 90-90.27, unit='deg'),
-			SkyCoord(3.35, 90-89.97, unit='deg'),
-			SkyCoord(224.93, 90-20.43, unit='deg'),
-			SkyCoord(224.62, 90-46.18, unit='deg'),
-			SkyCoord(236.61, 90-89.97, unit='deg'),
-			SkyCoord(135.19, 90-45.55, unit='deg'),
-			SkyCoord(123.73, 90-90.42, unit='deg'),
-			SkyCoord(183.74, 90-90.32, unit='deg')]
-
 def if_closeDet(det_list):
 	"""Check at least three detectors are closely related with each other
 	"""
+	Det_pointing=[SkyCoord(45.89, 90-20.58, unit='deg'),
+				SkyCoord(45.11, 90-45.31, unit='deg'),
+				SkyCoord(58.44, 90-90.21, unit='deg'),
+				SkyCoord(314.87, 90-45.24, unit='deg'),
+				SkyCoord(303.15, 90-90.27, unit='deg'),
+				SkyCoord(3.35, 90-89.97, unit='deg'),
+				SkyCoord(224.93, 90-20.43, unit='deg'),
+				SkyCoord(224.62, 90-46.18, unit='deg'),
+				SkyCoord(236.61, 90-89.97, unit='deg'),
+				SkyCoord(135.19, 90-45.55, unit='deg'),
+				SkyCoord(123.73, 90-90.42, unit='deg'),
+				SkyCoord(183.74, 90-90.32, unit='deg')]
 	test = False
 	for det3_1, det3_2, det3_3 in itertools.combinations(det_list,3):
 		inner_test = True		

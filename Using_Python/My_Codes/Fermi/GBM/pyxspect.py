@@ -50,7 +50,7 @@ if __name__ == '__main__':
 	#main()
 	cdir = os.getcwd()
 	resultdir = cdir+'/results/'
-	bn = ['bn180720598','bn190829830']
+	bn = ['bn190114873','bn180720598','bn190829830']
 	ncore = set_ncore()
 	p = Pool(ncore)
 	total_num = len(bn)
