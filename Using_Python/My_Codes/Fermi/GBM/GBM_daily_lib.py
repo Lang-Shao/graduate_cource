@@ -1,26 +1,23 @@
 # General analyses of GBM daily data
 import matplotlib
 matplotlib.use('Agg')
-from astropy.io import fits
-from astropy.time import Time
-from astropy.table import Table
-from astropy.coordinates import get_sun,get_body_barycentric,cartesian_to_spherical
-from astropy.coordinates import SkyCoord, cartesian_to_spherical
-from glob import glob
+import os
+import sys
 import time
 import h5py
 import pandas as pd
 import numpy as np
 import functools
+import pysnooper
+from astropy.io import fits
+from astropy.time import Time
+import astropy.units as u
+from glob import glob
 from scipy.stats import poisson
 from scipy.stats import norm
-import os
-import sys
-from collections import OrderedDict
-import astropy.units as u
 from matplotlib import pyplot as plt
-import matplotlib.colors as colors
 from matplotlib import ticker
+import matplotlib.colors as colors
 from multiprocessing import Pool
 #supress rpy2 warnings for rpy2<3.0
 import warnings
@@ -128,7 +125,6 @@ def met2utc(myMET):
 ###########################
 
 class TIMEWINDOW:
-
 	def __init__(self, winname, StartUTC, EndUTC, resultdir='./results'):
 		self.winname = winname
 		self.Startmet = utc2met([StartUTC])[0]
@@ -203,6 +199,7 @@ class TIMEWINDOW:
 			plt.close()
 			f.close()
 
+	#@pysnooper.snoop('./log.txt')
 	def base(self,binwidth=0.064):
 		f = h5py.File(self.datadir+'/data.h5',mode='r')
 		for i in range(14):

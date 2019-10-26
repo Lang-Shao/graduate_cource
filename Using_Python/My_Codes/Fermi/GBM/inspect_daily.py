@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 def inspect_timewindow(winname, StartUTC, EndUTC, resultdir='./'):
 	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir=resultdir)
 	slice1.plot_rawlc()
-
+	slice1.base()
 
 ############
 # RUN MAIN #
