@@ -179,7 +179,6 @@ class TIMEWINDOW:
 		if not os.path.exists(self.datadir+'/data.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='w')
 			for i in range(14):
-				f.create_group(Det[i])
 				timeforsave = np.array([])
 				chforsave = np.array([])
 				for hourstr in hourlist:
@@ -267,13 +266,11 @@ class TIMEWINDOW:
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
 			base_f = h5py.File(self.datadir+'/base.h5',mode='w')
 			for i in range(14):
-				#grp = base_f.create_group(Det[i])
 				GTI_array = GTI_f['/'+Det[i]][()]
 				nGTI = len(GTI_array[0])
 				t = f['/'+Det[i]+'/t'][()]
 				ch = f['/'+Det[i]+'/ch'][()]
 				for ii in range(nGTI):
-					base_f.create_group(Det[i]+'/'+'GTI'+str(ii))
 					for chno in np.arange(CH1,CH2+1):						
 						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
 						histvalue, histbin=np.histogram(t[ch==chno],bins=tbins)
