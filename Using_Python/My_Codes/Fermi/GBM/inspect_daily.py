@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 @timer
 def inspect_timewindow(winname, StartUTC, EndUTC, resultdir='./'):
 	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir=resultdir)
-	slice1.plot_rawlc()
+	slice1.plotrawlc_genGTI()
 	slice1.base()
 
 ############

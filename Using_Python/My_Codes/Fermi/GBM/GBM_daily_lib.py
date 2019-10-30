@@ -123,6 +123,42 @@ def met2utc(myMET):
 	else:
 		print('Check your input format!')
 		return None
+		
+def get_hourlist(StartUTC,EndinUTC):
+	hourstrs=['00','01','02','03','04','05','06','07','08','09','10',\
+	'11','12','13','14','15','16','17','18','19','20','21','22','23']
+	t0tmp='2000-01-01'
+	t1tmp='2000-01-02'
+	oneday=Time(t1tmp)-Time(t0tmp)
+	Startdate=StartUTC[:10]
+	Endindate=EndinUTC[:10]
+	Starthour=StartUTC[11:13]
+	Endinhour=EndinUTC[11:13]
+	starthourindex=hourstrs.index(Starthour)
+	endinhourindex=hourstrs.index(Endinhour)
+	Startday=Time(Startdate,format='iso',scale='utc')
+	Endinday=Time(Endindate,format='iso',scale='utc')
+	deltaday=int((Endinday-Startday).jd)
+	if deltaday==0:
+		deltahour=int(Endinhour)-int(Starthour)
+		if deltahour<0:
+			sys.exit('***ERROR: Check if StartUTC and EndinUTC are valid!')
+		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(deltahour+1)]
+	elif deltaday==1:
+		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(24-starthourindex)]
+		hourlist1=[Endindate+' '+hourstrs[i]+':00:00'  for i in range(endinhourindex+1)]
+		hourlist.extend(hourlist1)
+	elif deltaday>=2:
+		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(24-starthourindex)]
+		for i in range(deltaday-1):
+			anotherdaystr=(Startday+oneday*(i+1)).iso
+			hourlist2=[anotherdaystr[0:10]+' '+hourstrs[j]+':00:00' for j in range(24)]
+			hourlist.extend(hourlist2)
+		hourlist2=[Endindate+' '+hourstrs[i]+':00:00'  for i in range(endinhourindex+1)]
+		hourlist.extend(hourlist2)
+	else:
+		sys.exit('***ERROR: Check if StartUTC and EndinUTC are valid!')
+	return hourlist
 
 ###########################
 # BEGIN class TIMEWINDOW #
@@ -172,26 +208,45 @@ class TIMEWINDOW:
 							if len(t)>1:
 								timeforsave = np.concatenate([timeforsave, t])
 								chforsave = np.int8(np.concatenate([chforsave, ch]))
-				f['/'+Det[i]+'/t'] = timeforsave
-				f['/'+Det[i]+'/ch'] = chforsave
+				if len(timeforsave)>1:
+					f['/'+Det[i]+'/t'] = timeforsave
+					f['/'+Det[i]+'/ch'] = chforsave
 			f.flush()
 			f.close()
 	
-	def plot_rawlc(self, binwidth=0.64):
-		if not os.path.exists(self.resultdir+'/raw_lc.png'):
+	def plotrawlc_genGTI(self, binwidth=0.64):
+		if not os.path.exists(self.datadir+'/GTI.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='w')
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			for i in range(14):
 				t = f['/'+Det[i]+'/t'][()]
-				viewt1 = np.min(t)
-				viewt2 = np.max(t)
-				tbins = np.arange(viewt1,viewt2+binwidth,binwidth)
+				GTI0_t1 = t[0]
+				GTI0_t2 = t[-1]
+				timeseq1 = t[:-1]
+				timeseq2 = t[1:]
+				deltime = timeseq2 - timeseq1
+				# A gap is considered existing where neighboring photons separate for larger than 5 second
+				gapindex = deltime > 5
+				if len(timeseq1[gapindex]) >= 1:
+					GTI_t1 = np.array(np.append([GTI0_t1],timeseq2[gapindex]))
+					GTI_t2 = np.array(np.append(timeseq1[gapindex],[GTI0_t2]))
+					GTI_array = np.array([GTI_t1,GTI_t2])
+				else:
+					GTI_array = np.array([[GTI0_t1],[GTI0_t2]])
+				GTI_f['/'+Det[i]] = GTI_array
+				tbins = np.arange(GTI0_t1,GTI0_t2+binwidth,binwidth)
 				histvalue, histbin = np.histogram(t,bins=tbins)
 				plotrate = histvalue/binwidth
 				plotrate = np.concatenate(([plotrate[0]],plotrate))
 				axes[i//2,i%2].plot(histbin,plotrate,drawstyle='steps')
-				axes[i//2,i%2].set_xlim([viewt1,viewt2])
+				if len(GTI_array[0]) > 1:
+					for value in np.concatenate((GTI_array[0][1:],GTI_array[1][:-1])):
+						axes[i//2,i%2].axvline(value,ymax=0.05,color='r',linewidth=3.0)
+
+				axes[i//2,i%2].set_xlim([GTI0_t1,GTI0_t2])
+				axes[i//2,i%2].set_ylim([0,axes[i//2,i%2].get_ylim()[1]])
 				axes[i//2,i%2].tick_params(labelsize=25)
 				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
 									transform=axes[i//2,i%2].transAxes)
@@ -202,187 +257,53 @@ class TIMEWINDOW:
 			plt.savefig(self.resultdir+'/raw_lc.png')
 			plt.close()
 			f.close()
+			GTI_f.flush()
+			GTI_f.close()
 
 	#@pysnooper.snoop('./log.txt')
-	def base(self,binwidth=0.064):
-		f = h5py.File(self.datadir+'/data.h5',mode='r')
-		for i in range(14):
-			t = f['/'+Det[i]+'/t'][()]
-			ch = f['/'+Det[i]+'/ch'][()]
-			viewt1 = np.min(t)
-			viewt2 = np.max(t)
-			for chno in np.arange(CH1,CH2+1):
-				time_selected = t[ch==chno]
-				time_selected.sort()
-				GTI0_t1 = time_selected[0]
-				GTI0_t1 = time_selected[0]
-
+	def base(self,binwidth=0.64):
+		if not os.path.exists(self.datadir+'/base.h5'):
+			f = h5py.File(self.datadir+'/data.h5',mode='r')
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			base_f = h5py.File(self.datadir+'/base.h5',mode='w')
+			for i in range(14):
+				grp = base_f.create_group(Det[i])
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				t = f['/'+Det[i]+'/t'][()]
+				ch = f['/'+Det[i]+'/ch'][()]
+				for chno in np.arange(CH1,CH2+1):
+					for ii in range(nGTI):
+						grp.create_group('GTI'+str(ii))
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						histvalue, histbin=np.histogram(t[ch==chno],bins=tbins)
+						rate = histvalue/binwidth
+						r.assign('rrate',rate) 
+						r("y=matrix(rrate,nrow=1)")
+						fillPeak_hwi = str(int(5/binwidth))
+						fillPeak_int = str(int(len(rate)/10))
+						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
+							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
+						r("bs=getBaseline(rbase)")
+						r("cs=getCorrected(rbase)")
+						bs = np.array(r('bs'))[0]
+						cs = np.array(r('cs'))[0]
+						# correct negative base to 0 and recover the net value to original rate
+						corrections_index = (bs < 0)
+						bs[corrections_index] = 0
+						cs[corrections_index] = rate[corrections_index]
+						base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(ch)] = np.array([rate,bs,cs])
+			base_f.flush()
+			base_f.close()
+			GTI_f.close()
+			f.close()
+			
 # ***********************old************************
 
 # https://en.wikipedia.org/wiki/Normal_distribution
 def norm_pvalue(sigma):
 	p = norm.cdf(sigma)-norm.cdf(-sigma)
 	return p
-
-
-def get_hourlist(StartUTC,EndinUTC):
-	hourstrs=['00','01','02','03','04','05','06','07','08','09','10',\
-	'11','12','13','14','15','16','17','18','19','20','21','22','23']
-	t0tmp='2000-01-01'
-	t1tmp='2000-01-02'
-	oneday=Time(t1tmp)-Time(t0tmp)
-	Startdate=StartUTC[:10]
-	Endindate=EndinUTC[:10]
-	Starthour=StartUTC[11:13]
-	Endinhour=EndinUTC[11:13]
-	starthourindex=hourstrs.index(Starthour)
-	endinhourindex=hourstrs.index(Endinhour)
-	Startday=Time(Startdate,format='iso',scale='utc')
-	Endinday=Time(Endindate,format='iso',scale='utc')
-	deltaday=int((Endinday-Startday).jd)
-	if deltaday==0:
-		deltahour=int(Endinhour)-int(Starthour)
-		if deltahour<0:
-			sys.exit('***ERROR: Check if StartUTC and EndinUTC are valid!')
-		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(deltahour+1)]
-	elif deltaday==1:
-		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(24-starthourindex)]
-		hourlist1=[Endindate+' '+hourstrs[i]+':00:00'  for i in range(endinhourindex+1)]
-		hourlist.extend(hourlist1)
-	elif deltaday>=2:
-		hourlist=[Startdate+' '+hourstrs[starthourindex+i]+':00:00'  for i in range(24-starthourindex)]
-		for i in range(deltaday-1):
-			anotherdaystr=(Startday+oneday*(i+1)).iso
-			hourlist2=[anotherdaystr[0:10]+' '+hourstrs[j]+':00:00' for j in range(24)]
-			hourlist.extend(hourlist2)
-		hourlist2=[Endindate+' '+hourstrs[i]+':00:00'  for i in range(endinhourindex+1)]
-		hourlist.extend(hourlist2)
-	else:
-		sys.exit('***ERROR: Check if StartUTC and EndinUTC are valid!')
-	return hourlist
-
-
-
-def gen_ttedata(pars):
-	# pars=[hourstr,ttehourdatadir,Startmet,Endinmet,ch1,ch2] for parellel
-	# hourstr as in '2015-03-14 04:00:00'
-	# ttehourdatadir in string
-	# ch1 and ch2 as channel numbers in integer
-	hourstr = pars[0]
-	ttehourdatadir = pars[1]
-	Startmet = pars[2]
-	Endinmet = pars[3]
-	ch1=pars[4]
-	ch2=pars[5]
-	year = hourstr[:4]
-	yearshort = hourstr[2:4]
-	month = hourstr[5:7]
-	day = hourstr[8:10]
-	hour = hourstr[11:13]+'z'
-	datadir = databasedir+'/'+year+'/'+month+'/'+day+'/'
-	tbegin_met = utc2met([hourstr])
-	tbegin_met = tbegin_met[0]
-	tend_met=tbegin_met+3600.00
-	for i in range(12):
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-			sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		data=hdu['EVENTS'].data
-		time=data.field(0)
-		ch=data.field(1)
-		GTI=hdu['GTI'].data
-		tbegin=GTI[0][0]
-		validindex=(time>=tbegin_met) & (time< tend_met) & (time>=Startmet) & (time<=Endinmet)
-		time_corrected=time[validindex]
-		ch_corrected=ch[validindex]
-		# abandon invalid UTC time slice in cases
-		# when given UTC time slice is very close to the GTI edges
-		# or when the given UTC time slice is not in any GTI region
-		if len(time_corrected)>1:
-			ch_index=(ch_corrected>=ch1) & (ch_corrected<=ch2)
-			time_save=time_corrected[ch_index]
-			ch_save=ch_corrected[ch_index]
-			if len(time_save)>1:
-				df=pd.DataFrame(np.array([time_save,ch_save]).T,columns=['time','ch'])
-				df.to_csv(ttehourdatadir+'/'+hourstr+'_'+NaI[i]+'_tte.csv',index=False)
-
-# plot the raw lightcurve using the TTE data generated above
-# AND generate GTI for later usages
-def plot_rawlc_gen_GTIs(ch1,ch2,hourlist,ttehourdatadir,Startmet,Endinmet,StartUTC,EndinUTC,\
-							lcbinwidth,GTIdir,rawlcdir,resultdir,trigtime_str=None):
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		#find out energy range
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-			sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		# generate the full TTE data and save for later usage
-		df=pd.DataFrame(np.array([[],[]]).T,columns=['time','ch'])
-		for hourstr in hourlist:
-			if os.path.exists(ttehourdatadir+'/'+hourstr+'_'+NaI[i]+'_tte.csv')== True:
-				df1=pd.read_csv(ttehourdatadir+'/'+hourstr+'_'+NaI[i]+'_tte.csv')
-				df=pd.concat([df,df1])
-		# check if the data during given UTC slice are valid for plotting
-		if len(df)<1:
-			sys.exit('No valid data during the given UTC slice! Plotting is not successful!')
-		df.to_csv(ttehourdatadir+'/'+NaI[i]+'_tte.csv',index=False)
-		# make GTI regions from raw light curves by determining
-		# where the gap between neighboring photons is larger than 5 second
-		timeseq=df['time'].get_values()
-		GTI0_t1=df['time'].get_values()[0]
-		GTI0_t2=df['time'].get_values()[-1]
-		timeseq.sort()
-		timeseq2=timeseq[1:]
-		timeseq1=timeseq[:-1]
-		deltime=timeseq2-timeseq1
-		delindex=deltime>5
-		if len(timeseq1[delindex])>=1:
-			GTI_t1=np.array(np.append([GTI0_t1],timeseq2[delindex]))
-			GTI_t2=np.array(np.append(timeseq1[delindex],[GTI0_t2]))
-			dfGTI=pd.DataFrame(np.array([GTI_t1,GTI_t2]).T,columns=['t1','t2'])
-			dfGTI.to_csv(GTIdir+'/'+NaI[i]+'_GTI.csv',index=False)
-		else:
-			dfGTI=pd.DataFrame(np.array([[GTI0_t1],[GTI0_t2]]).T,columns=['t1','t2'])
-			dfGTI.to_csv(GTIdir+'/'+NaI[i]+'_GTI.csv',index=False)
-		#plot raw light curves
-		tbins=np.arange(GTI0_t1,GTI0_t2+lcbinwidth,lcbinwidth)
-		histvalue, histbin =np.histogram(df['time'],bins=tbins)
-		plottime=histbin[:-1]+lcbinwidth/2.0
-		plotrate=histvalue/lcbinwidth
-		df=pd.DataFrame(np.array([plottime,plotrate]).T,columns=['time','rate'])
-		df.to_csv(rawlcdir+'/'+NaI[i]+'_raw_lc.csv',index=False)
-		plotrate=np.concatenate(([plotrate[0]],plotrate))
-		ax.plot(histbin,plotrate,linestyle='steps')
-		plt.text(0.1,0.88,NaI[i],transform=ax.transAxes,fontsize=30)
-		plt.text(0.8,0.88,str(round(emin[ch1],1))+'-'+str(round(emin[ch2+1],1))+' keV',transform=ax.transAxes,fontsize=30)
-		ax.tick_params(labelsize=15,top=True,right=True)
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],ymax=0.1,color='r',linewidth=3.0)
-			if i==1:
-				ax.set_title('Trigtime= '+trigtime_str,fontsize=30)
-		if i==10 or i ==11: 
-			ax.set_xlabel('Time (s)',fontsize=30,labelpad=20)
-		if i%2==0: 
-			ax.set_ylabel('Count rate (s$^{-1}$)',fontsize=30,labelpad=20)
-		if i==0: 
-			ax.set_title(StartUTC+' -- '+EndinUTC,fontsize=30)
-		
-		ax.set_xlim([Startmet, Endinmet])
-	plt.savefig(resultdir+'raw_lc.png')
-	plt.close()
 
 #the function for subtracting the background in each channel using R baseline and determining poisson level
 def baseline_in_channel(pars):
