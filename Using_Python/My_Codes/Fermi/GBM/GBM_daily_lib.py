@@ -19,14 +19,18 @@ from matplotlib import pyplot as plt
 from matplotlib import ticker
 import matplotlib.colors as colors
 from multiprocessing import Pool
-#supress rpy2 warnings for rpy2<3.0
-import warnings
-from rpy2.rinterface import RRuntimeWarning
-warnings.filterwarnings("ignore", category=RRuntimeWarning)
-#supress rpy2 warnings for rpy2>=3.0
-#from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
-#import logging
-#rpy2_logger.setLevel(logging.ERROR) 
+# -supress rpy2 warnings
+import rpy2
+rpy2_ver = rpy2.__version__
+if rpy2_ver[0] == '2':
+	import warnings
+	from rpy2.rinterface import RRuntimeWarning
+	warnings.filterwarnings("ignore", category=RRuntimeWarning)
+else:
+	from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
+	import logging
+	rpy2_logger.setLevel(logging.ERROR)
+# ---------------------
 from rpy2.robjects import r
 from rpy2.robjects import numpy2ri
 r("library(baseline)")
@@ -130,13 +134,13 @@ class TIMEWINDOW:
 		self.Startmet = utc2met([StartUTC])[0]
 		self.Endmet = utc2met([EndUTC])[0]
 		self.resultdir = resultdir+'/'+winname+'/'
-		if os.path.exists(self.resultdir)== False:
+		if not os.path.exists(self.resultdir):
 			os.makedirs(self.resultdir)
 		self.datadir = self.resultdir+'/data/'
-		if os.path.exists(self.datadir)== False:
+		if not os.path.exists(self.datadir):
 			os.makedirs(self.datadir)	
 		hourlist = get_hourlist(StartUTC,EndUTC)
-		if os.path.exists(self.datadir+'/data.h5')== False:
+		if not os.path.exists(self.datadir+'/data.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='w')
 			for i in range(14):
 				f.create_group(Det[i])
@@ -149,41 +153,41 @@ class TIMEWINDOW:
 					day = hourstr[8:10]
 					hour = hourstr[11:13]+'z'
 					thisdatadir = DATABASEDIR+'/'+year+'/'+month+'/'+day+'/'
-					tbegin_met = utc2met(hourstr)
-					tend_met=tbegin_met+3600.00
+					hourbegin_met = utc2met(hourstr)
+					hourend_met=hourbegin_met+3600.00
 					ttefile=glob(thisdatadir+'glg_tte_'+Det[i]+'_'+yearshort+month+day+'_'+hour+'_*')
 					filenum=len(ttefile)
 					if  filenum==1:
 						hdu=fits.open(ttefile[0])
 						data=hdu['EVENTS'].data
-						time=data.field(0)
+						t=data.field(0)
 						ch=data.field(1)
-						validindex=(time>=tbegin_met) & (time<tend_met) & (time>=self.Startmet) & (time<=self.Endmet)
-						time=time[validindex]
+						validindex=(t>=hourbegin_met) & (t<hourend_met) & (t>=self.Startmet) & (t<=self.Endmet)
+						t=t[validindex]
 						ch=ch[validindex]
-						if len(time)>1:
+						if len(t)>1:
 							ch_index = (ch>=CH1) & (ch<=CH2)
-							time=time[ch_index]
+							t=t[ch_index]
 							ch=ch[ch_index]
-							if len(time)>1:
-								timeforsave = np.concatenate([timeforsave, time])
+							if len(t)>1:
+								timeforsave = np.concatenate([timeforsave, t])
 								chforsave = np.int8(np.concatenate([chforsave, ch]))
-				f['/'+Det[i]+'/time'] = timeforsave
+				f['/'+Det[i]+'/t'] = timeforsave
 				f['/'+Det[i]+'/ch'] = chforsave
 			f.flush()
 			f.close()
 	
-	def plot_rawlc(self, binwidth=0.064):
+	def plot_rawlc(self, binwidth=0.64):
 		if not os.path.exists(self.resultdir+'/raw_lc.png'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			for i in range(14):
-				time = f['/'+Det[i]+'/time'][()]
-				viewt1 = np.min(time)
-				viewt2 = np.max(time)
+				t = f['/'+Det[i]+'/t'][()]
+				viewt1 = np.min(t)
+				viewt2 = np.max(t)
 				tbins = np.arange(viewt1,viewt2+binwidth,binwidth)
-				histvalue, histbin = np.histogram(time,bins=tbins)
+				histvalue, histbin = np.histogram(t,bins=tbins)
 				plotrate = histvalue/binwidth
 				plotrate = np.concatenate(([plotrate[0]],plotrate))
 				axes[i//2,i%2].plot(histbin,plotrate,drawstyle='steps')
@@ -193,7 +197,7 @@ class TIMEWINDOW:
 									transform=axes[i//2,i%2].transAxes)
 			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
 						va='center',rotation='vertical',fontsize=30)
-			fig.text(0.5, 0.05, 'Time (s)', ha='center',
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/raw_lc.png')
 			plt.close()
@@ -203,12 +207,12 @@ class TIMEWINDOW:
 	def base(self,binwidth=0.064):
 		f = h5py.File(self.datadir+'/data.h5',mode='r')
 		for i in range(14):
-			time = f['/'+Det[i]+'/time'][()]
+			t = f['/'+Det[i]+'/t'][()]
 			ch = f['/'+Det[i]+'/ch'][()]
-			viewt1 = np.min(time)
-			viewt2 = np.max(time)
+			viewt1 = np.min(t)
+			viewt2 = np.max(t)
 			for chno in np.arange(CH1,CH2+1):
-				time_selected = time[ch==chno]
+				time_selected = t[ch==chno]
 				time_selected.sort()
 				GTI0_t1 = time_selected[0]
 				GTI0_t1 = time_selected[0]

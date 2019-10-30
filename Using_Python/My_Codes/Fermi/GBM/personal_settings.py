@@ -6,11 +6,11 @@ def get_usersjar():
 	return usersjar
 
 def get_burstdatabasedir():
-	#databasedir = '/diskb/Database/Fermi/gbm_burst/data/'
-	databasedir = '/home/lang/work/GBM/burstdownload/data/'
+	databasedir = '/diskb/Database/Fermi/gbm_burst/data/'
+	#databasedir = '/home/lang/work/GBM/burstdownload/data/'
 	return databasedir
 
 def get_dailydatabasedir():
-	#dailydatabasedir= '/diska/Fermi_GBM_daily/data/'
-	dailydatabasedir = '/home/lang/work/GBM/daily/data/'
+	dailydatabasedir= '/diska/Fermi_GBM_daily/data/'
+	#dailydatabasedir = '/home/lang/work/GBM/daily/data/'
 	return dailydatabasedir
