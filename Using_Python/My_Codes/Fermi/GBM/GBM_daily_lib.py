@@ -267,14 +267,14 @@ class TIMEWINDOW:
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
 			base_f = h5py.File(self.datadir+'/base.h5',mode='w')
 			for i in range(14):
-				grp = base_f.create_group(Det[i])
+				#grp = base_f.create_group(Det[i])
 				GTI_array = GTI_f['/'+Det[i]][()]
 				nGTI = len(GTI_array[0])
 				t = f['/'+Det[i]+'/t'][()]
 				ch = f['/'+Det[i]+'/ch'][()]
-				for chno in np.arange(CH1,CH2+1):
-					for ii in range(nGTI):
-						grp.create_group('GTI'+str(ii))
+				for ii in range(nGTI):
+					base_f.create_group(Det[i]+'/'+'GTI'+str(ii))
+					for chno in np.arange(CH1,CH2+1):						
 						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
 						histvalue, histbin=np.histogram(t[ch==chno],bins=tbins)
 						rate = histvalue/binwidth
@@ -292,7 +292,7 @@ class TIMEWINDOW:
 						corrections_index = (bs < 0)
 						bs[corrections_index] = 0
 						cs[corrections_index] = rate[corrections_index]
-						base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(ch)] = np.array([rate,bs,cs])
+						base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)] = np.array([rate,bs,cs])
 			base_f.flush()
 			base_f.close()
 			GTI_f.close()

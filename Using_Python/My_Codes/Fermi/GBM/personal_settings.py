@@ -11,6 +11,6 @@ def get_burstdatabasedir():
 	return databasedir
 
 def get_dailydatabasedir():
-	dailydatabasedir= '/diska/Fermi_GBM_daily/data/'
-	#dailydatabasedir = '/home/lang/work/GBM/daily/data/'
+	#dailydatabasedir= '/diska/Fermi_GBM_daily/data/'
+	dailydatabasedir = '/home/lang/work/GBM/daily/data/'
 	return dailydatabasedir
