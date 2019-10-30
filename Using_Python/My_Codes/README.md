@@ -35,3 +35,9 @@ from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
 import logging
 
 rpy2_logger.setLevel(logging.ERROR)   # will display errors, but not warnings
+
+
+h5py
+-----
+
+create_group method is not necesary, subgroups can be created on-the-fly
