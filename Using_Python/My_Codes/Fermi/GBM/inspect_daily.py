@@ -7,6 +7,8 @@ def inspect_timewindow(winname, StartUTC, EndUTC, resultdir='./'):
 	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir=resultdir)
 	slice1.plotrawlc_genGTI()
 	slice1.base()
+	slice1.plotbase()
+	slice1.plotnetlc()
 
 ############
 # RUN MAIN #

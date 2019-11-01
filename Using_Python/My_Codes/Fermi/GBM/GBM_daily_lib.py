@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import functools
 import pysnooper
+#@pysnooper.snoop('./log.txt')
 from astropy.io import fits
 from astropy.time import Time
 import astropy.units as u
@@ -259,7 +260,6 @@ class TIMEWINDOW:
 			GTI_f.flush()
 			GTI_f.close()
 
-	#@pysnooper.snoop('./log.txt')
 	def base(self,binwidth=0.64):
 		if not os.path.exists(self.datadir+'/base.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
@@ -290,361 +290,83 @@ class TIMEWINDOW:
 						bs[corrections_index] = 0
 						cs[corrections_index] = rate[corrections_index]
 						base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)] = np.array([rate,bs,cs])
+			base_f.attrs["binwidth"] = 	str(binwidth)		
 			base_f.flush()
 			base_f.close()
 			GTI_f.close()
 			f.close()
 			
-# ***********************old************************
 
-# https://en.wikipedia.org/wiki/Normal_distribution
-def norm_pvalue(sigma):
-	p = norm.cdf(sigma)-norm.cdf(-sigma)
-	return p
+	def plotbase(self):
+		if not os.path.exists(self.resultdir+'/base.png'):
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
+			binwidth = np.float(base_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=False)
+			for i in range(14):
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				for ii in range(nGTI):
+					rate, bs, cs = np.sum([base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0)			
+					tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+					plotrate = np.concatenate(([rate[0]],rate))
+					plotbs = np.concatenate(([bs[0]],bs))
+					axes[i//2,i%2].plot(tbins,plotrate,drawstyle='steps',color='C0')
+					axes[i//2,i%2].plot(tbins,plotbs,drawstyle='steps',color='C3')
+				axes[i//2,i%2].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
+				axes[i//2,i%2].set_ylim([0,axes[i//2,i%2].get_ylim()[1]])
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+									transform=axes[i//2,i%2].transAxes)
+			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
+						va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
+								va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/base.png')
+			plt.close()
+			base_f.close()
+			GTI_f.close()
 
-#the function for subtracting the background in each channel using R baseline and determining poisson level
-def baseline_in_channel(pars):
-	ch=pars[0]
-	sigma=pars[1]
-	ttehourdatadir=pars[2]
-	GTIdir=pars[3]
-	lcbinwidth=pars[4]
-	baseresultdir=pars[5]
-	for i in range(12):
-		df=pd.read_csv(ttehourdatadir+'/'+NaI[i]+'_tte.csv')
-		chs=df['ch'].astype('int')
-		time_selected=df['time'][chs==ch]
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		# evaluate baseline separately for each GTI
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			histvalue, histbin=np.histogram(time_selected,bins=tbins)
-			#rate=histvalue/lcbinwidth
-			r.assign('rrate',histvalue) # rate= count per bin
-			r("y=matrix(rrate,nrow=1)")
-			# set fillPeak_int as many as the duration of light curve
-			fillPeak_int=str(int(histbin[-1]-histbin[0]))
-			#r("rbase=baseline(y,lam = 6, hwi=50, it=10, int = 100, method='fillPeaks')")
-			r("rbase=baseline(y,lam = 6, hwi=10, it=10, int ="+fillPeak_int+", method='fillPeaks')")
-			r("bs=getBaseline(rbase)")
-			r("cs=getCorrected(rbase)")
-			bs=r('bs')[0]
-			cs=r('cs')[0]
-			# poissonlevel: lamb should be >=1.0 to avoid triggering false weak signals
-			poissonlevel=np.array([poisson_k(max(lamb,1.0),sigma=sigma) for lamb in bs])
-			df=pd.DataFrame(np.array([histvalue,bs,cs,poissonlevel]).T,columns=['rate','base','net','poisson'])
-			df.to_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch)+'.csv',index=False)
-
-
-def plot_raw_countmap(hourlist,ttehourdatadir,Startmet, Endinmet,GTIdir,\
-				lcbinwidth,ch1,ch2,resultdir,trigtime_str=None):
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-				sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		# read out the full TTE data and GTI regions
-		df=pd.read_csv(ttehourdatadir+'/'+NaI[i]+'_tte.csv')
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			x = tbins
-			y = emin[ch1:ch2+2]
-			X, Y = np.meshgrid(x, y)
-			C=np.array([np.histogram(df['time'][df['ch']==chvalue],bins=tbins)[0] \
-								for chvalue in np.arange(ch1,ch2+1)])
-			C[C<1]=1
-			pcm = plt.pcolor(X, Y, C,norm=colors.LogNorm(vmin=1.0, vmax=C.max()),\
-									cmap='rainbow')
-
-			#plt.pcolormesh(X, Y, np.log10(C))
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],ymax=0.1,color='r',linewidth=3.0)
-		plt.title(NaI[i],loc='left')
-		#if i==0 or i ==1: ax.set_title(StartUTC+' -- '+EndinUTC,fontsize=30)
-		ax.set_xlabel('Time (s)')
-		ax.set_xlim([Startmet, Endinmet])
-		ax.set_yscale('log')
-		ax.set_ylabel('Energy (KeV)')
-		ax.set_ylim([emin[ch1], emin[ch2+1]])
-		ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
-		cbar=fig.colorbar(pcm, extend='max')
-		#cbar = plt.colorbar()
-		#cbar.ax.set_ylabel('log(count rate per pixel)')
-		cbar.ax.set_ylabel('count per pixel')
-	plt.savefig(resultdir+'raw_countmap.png')
-	plt.close()
-
-
-# plot the net count map with baseline subtracted 
-def plot_net_countmap(hourlist,ttehourdatadir,baseresultdir,Startmet, Endinmet,GTIdir,\
-		lcbinwidth,ch1,ch2,resultdir,trigtime_str=None):
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-				sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			x = tbins
-			y = emin[ch1:ch2+2]
-			X, Y = np.meshgrid(x, y)
-			C=np.array([pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+\
-				'_ch'+str(chvalue)+'.csv')['net'] for chvalue in np.arange(ch1,ch2+1)])	
-			#C[C<0]=np.min(C[C>0])
-			C[C<1]=1
-			pcm = plt.pcolor(X, Y, C,norm=colors.LogNorm(vmin=1.0,vmax=C.max()),\
-													cmap='rainbow')
-			#plt.pcolormesh(X, Y, np.log10(C))
-			#plt.clim(0, )
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],ymax=0.1,color='r',linewidth=3.0)
-		plt.title(NaI[i],loc='left')
-		ax.set_xlabel('Time (s)')
-		ax.set_xlim([Startmet, Endinmet])
-		ax.set_yscale('log')
-		ax.set_ylabel('Energy (KeV)')
-		ax.set_ylim([emin[ch1], emin[ch2+1]])
-		ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
-		cbar = plt.colorbar(pcm, extend='max')
-		cbar.ax.set_ylabel('count per pixel')
-	plt.savefig(resultdir+'net_countmap_baseline_subtracted.png')
-	plt.close()
-
-
-def plot_channellc_with_baseline_and_poisson(pars):
-	ch_index=pars[0]
-	sigma=pars[1]
-	trigtime_str=pars[2]
-	ttehourdatadir=pars[3]
-	GTIdir=pars[4]
-	lcbinwidth=pars[5]
-	baseresultdir=pars[6]
-	StartUTC=pars[7]
-	EndinUTC=pars[8]
-	Startmet=pars[9]
-	Endinmet=pars[10]
-	channellcdir=pars[11]
-	fig = plt.figure(figsize=(60, 30))
-	#fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(60,30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			plottime=tbins[:-1]+lcbinwidth/2.0
-			df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch_index)+'.csv')
-			plotrate=df['base'].get_values()
-			ax.plot(plottime,plotrate,linestyle='--',lw=4.0,color='tab:orange')
-			plotpoisson=df['poisson'].get_values()
-			ax.plot(plottime,plotpoisson,linestyle='--',lw=4.0,color='tab:red')
-			plotrate=df['rate'].get_values()
-			plotrate=np.concatenate(([plotrate[0]],plotrate))
-			ax.plot(tbins,plotrate,linestyle='steps',color='tab:blue')
-		plt.text(0.1,0.88,NaI[i],transform=ax.transAxes,fontsize=30)
-		ax.tick_params(labelsize=15,top=True,right=True)
-		ax.set_xlim([Startmet, Endinmet])
-	plt.savefig(channellcdir+'lc_'+str(ch_index)+'.png')
-	plt.close()
-
-#plot raw light curve showing baseline 
-def plot_rawlc_show_baseline(ch1,ch2,hourlist,Startmet,Endinmet,StartUTC,EndinUTC,\
-							lcbinwidth,GTIdir,baseresultdir,resultdir,trigtime_str=None):
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		#find out energy range
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-			sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		# plot summed light curves
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch1)+'.csv')
-			for ch_tmp in np.arange(ch1+1,ch2+1):
-				df_tmp=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch_tmp)+'.csv')
-				df=df+df_tmp
-			plotrate=df['rate'].get_values()/lcbinwidth
-			plotrate=np.concatenate(([plotrate[0]],plotrate))
-			ax.plot(tbins,plotrate,linestyle='steps',lw=3.0,color='tab:blue')
-			plotrate=df['base'].get_values()/lcbinwidth
-			plottime=tbins[:-1]+lcbinwidth/2.0
-			ax.plot(plottime,plotrate,linestyle='--',lw=4.0,color='tab:orange')
-		plt.text(0.1,0.88,NaI[i],transform=ax.transAxes,fontsize=30)
-		plt.text(0.8,0.88,str(round(emin[ch1],1))+'-'+str(round(emin[ch2],1))+' keV',transform=ax.transAxes,fontsize=30)
-		ax.tick_params(labelsize=15,top=True,right=True)
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],ymax=0.1,color='r',linewidth=3.0)
-			if i==1:
-				ax.set_title('Trigtime= '+trigtime_str,fontsize=30)
-		if i==10 or i ==11:
-			ax.set_xlabel('Time (s)',fontsize=30,labelpad=20)
-		if i%2==0:
-			ax.set_ylabel('Count rate (s$^{-1}$)',fontsize=30,labelpad=20)
-		if i==0:
-			ax.set_title(StartUTC+' -- '+EndinUTC,fontsize=30)
-		ax.set_xlim([Startmet, Endinmet])
-	plt.savefig(resultdir+'raw_lc_show_base.png')
-	plt.close()
-	
-#plot net light curve with baseline subtracted 
-def plot_netlc(ch1,ch2,hourlist,Startmet,Endinmet,StartUTC,EndinUTC,\
-							lcbinwidth,GTIdir,baseresultdir,resultdir,trigtime_str=None):
-	plotymax=0.0
-	# load net light curves and determine ymax
-	for i in range(12):
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch1)+'.csv')
-			for ch_tmp in np.arange(ch1+1,ch2+1):
-				df_tmp=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch_tmp)+'.csv')
-				df=df+df_tmp
-			plotrate=df['net'].get_values()/lcbinwidth
-			ymax=plotrate.max()
-			if plotymax<ymax: 
-				plotymax=ymax	
-	# load and plot net light curves with set ymax	
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		#find out energy range
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-			sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		# plot net light curves
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch1)+'.csv')
-			for ch_tmp in np.arange(ch1+1,ch2+1):
-				df_tmp=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch_tmp)+'.csv')
-				df=df+df_tmp
-			plotrate=df['net'].get_values()/lcbinwidth
-			plotrate=np.concatenate(([plotrate[0]],plotrate))
-			ax.plot(tbins,plotrate,linestyle='steps',lw=3.0,color='tab:blue')
-		plt.text(0.1,0.88,NaI[i],transform=ax.transAxes,fontsize=30)
-		plt.text(0.8,0.88,str(round(emin[ch1],1))+'-'+str(round(emin[ch2],1))+' keV',transform=ax.transAxes,fontsize=30)
-		ax.tick_params(labelsize=15,top=True,right=True)
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],ymax=0.1,color='r',linewidth=3.0)
-			if i==1:
-				ax.set_title('Trigtime= '+trigtime_str,fontsize=30)
-		if i==10 or i ==11:
-			ax.set_xlabel('Time (s)',fontsize=30,labelpad=20)
-		if i%2==0:
-			ax.set_ylabel('Count rate (s$^{-1}$)',fontsize=30,labelpad=20)
-		if i==0:
-			ax.set_title(StartUTC+' -- '+EndinUTC,fontsize=30)
-		ax.set_xlim([Startmet, Endinmet])
-		ax.set_ylim([0,plotymax])
-	plt.savefig(resultdir+'net_lc_backfree.png')
-	plt.close()
-
-# plot the baseline subtracted 2D count map only showing pixels over poisson level
-def plot_net_countmap_over_poisson_level(hourlist,ttehourdatadir,baseresultdir,\
-		Startmet, Endinmet,GTIdir,lcbinwidth,ch1,ch2,resultdir,trigtime_str=None):
-	fig = plt.figure(figsize=(60, 30))
-	for i in range(12):
-		ax = plt.subplot2grid((6,2),(i//2,i%2))
-		year=hourlist[0][:4]
-		yearshort=hourlist[0][2:4]
-		month=hourlist[0][5:7]
-		day=hourlist[0][8:10]
-		hour=hourlist[0][11:13]+'z'
-		datadir=databasedir+'/'+year+'/'+month+'/'+day+'/'
-		ttefile=glob(datadir+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		filenum=len(ttefile)
-		if  filenum!=1:
-				sys.exit('wrong file:'+'glg_tte_'+NaI[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-		hdu=fits.open(ttefile[0])
-		ebound=hdu['EBOUNDS'].data
-		emin=ebound.field(1)
-		dfGTI=pd.read_csv(GTIdir+'/'+NaI[i]+'_GTI.csv')
-		nGTI=len(dfGTI)
-		for ii in range(nGTI):
-			tbins=np.arange(dfGTI['t1'][ii],dfGTI['t2'][ii]+lcbinwidth,lcbinwidth)
-			x = tbins
-			y = emin[ch1:ch2+2]
-			X, Y = np.meshgrid(x, y)
-			#C=np.array([pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+\
-			#	'_ch'+str(chvalue)+'.csv')['net'] for chvalue in np.arange(ch1,ch2+1)])
-			df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(ch1)+'.csv')
-			net_tmp=df['net'].get_values()
-			rate_tmp=df['rate'].get_values()
-			poisson_tmp=df['poisson'].get_values()
-			net_tmp[rate_tmp <= poisson_tmp]=1.0
-			C=net_tmp
-			for chvalue in np.arange(ch1+1,ch2+1):
-				df=pd.read_csv(baseresultdir+'/'+NaI[i]+'/GTI_'+str(ii)+'_ch'+str(chvalue)+'.csv')
-				net_tmp=df['net'].get_values()
-				rate_tmp=df['rate'].get_values()
-				poisson_tmp=df['poisson'].get_values()
-				net_tmp[rate_tmp <= poisson_tmp]=1.0
-				C=np.vstack((C,net_tmp))
-			pcm = plt.pcolor(X, Y, C,norm=colors.LogNorm(vmin=1.0,vmax=C.max()),\
-													cmap='rainbow')
-		if trigtime_str:
-			ax.axvline(utc2met([trigtime_str])[0],color='r',linestyle='--',linewidth=2.0)
-		plt.title(NaI[i],loc='left')
-		ax.set_xlabel('Time (s)')
-		ax.set_xlim([Startmet, Endinmet])
-		ax.set_yscale('log')
-		ax.set_ylabel('Energy (KeV)')
-		ax.set_ylim([emin[ch1], emin[ch2+1]])
-		ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
-		cbar = plt.colorbar(pcm, extend='max')
-		cbar.ax.set_ylabel('count per pixel')
-	plt.savefig(resultdir+'net_countmap_baseline_subtracted_over_poisson_level.png')
-	plt.close()
+	def plotnetlc(self):
+		if not os.path.exists(self.resultdir+'/netlc.png'):
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
+			binwidth = np.float(base_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=False)
+			plotBGOmax=0.0
+			plotNaImax=0.0
+			for i in range(14):
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				for ii in range(nGTI):
+					rate, bs, cs = np.sum([base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0)			
+					tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+					plotcs = np.concatenate(([cs[0]],cs))
+					axes[i//2,i%2].plot(tbins,plotcs,drawstyle='steps',color='C0')
+				if i <=1:
+					BGOmax = axes[i//2,i%2].get_ylim()[1]
+					if plotBGOmax < BGOmax:
+						plotBGOmax = BGOmax
+				else:
+					NaImax = axes[i//2,i%2].get_ylim()[1]
+					if plotNaImax < NaImax:
+						plotNaImax = NaImax
+				axes[i//2,i%2].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+									transform=axes[i//2,i%2].transAxes)
+			for i in range(14):
+				if i<=1:
+					axes[i//2,i%2].set_ylim([0,plotBGOmax])
+				else:
+					axes[i//2,i%2].set_ylim([0,plotNaImax])
+			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
+						va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
+								va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/netlc.png')
+			plt.close()
+			base_f.close()
+			GTI_f.close()
