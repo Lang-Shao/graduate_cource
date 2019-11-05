@@ -613,7 +613,7 @@ class GRB:
 					axes[i//2,i%2].legend(fontsize=20)
 			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
 									rotation='vertical',fontsize=30)
-			fig.text(0.5, 0.05, 'Total net rate (s$^{-1}$; between'
+			fig.text(0.5, 0.05, 'Significance ($\sigma$; between'
 						+str(self.baset1)+'--'+str(self.baset2)+'s)',
 						ha='center', va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/gaussian_significance_net_rate.png')
