@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 import os
 import sys
+import operator
 import time
 import h5py
 import pandas as pd
@@ -12,10 +13,10 @@ import pysnooper
 #@pysnooper.snoop('./log.txt')
 from astropy.io import fits
 from astropy.time import Time
+from astropy.stats import sigma_clip, mad_std
 import astropy.units as u
 from glob import glob
-from scipy.stats import poisson
-from scipy.stats import norm
+from scipy import stats
 from matplotlib import pyplot as plt
 from matplotlib import ticker
 import matplotlib.colors as colors
@@ -58,6 +59,16 @@ def set_ncore():
 	else:
 		use_ncore = Ncore - 2
 	return use_ncore
+
+# https://en.wikipedia.org/wiki/Normal_distribution
+# https://en.wikipedia.org/wiki/Poisson_distribution
+# cdfprob = 0.997300203937 # 3 sigma
+# cdfprob = 0.954499736104 # 2 sigma
+# cdfprob = 0.682689492137 # 1 sigma
+def norm_pvalue(sigma=3.0):
+	p = stats.norm.cdf(sigma)-stats.norm.cdf(-sigma)
+	return p
+
 
 def timer(func):
 	"""Print the runtime of the decorated function"""
@@ -214,6 +225,7 @@ class TIMEWINDOW:
 			f.flush()
 			f.close()
 	
+	# necessary; generating with GTI
 	def plotrawlc_genGTI(self, binwidth=0.64):
 		if not os.path.exists(self.datadir+'/GTI.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
@@ -260,7 +272,7 @@ class TIMEWINDOW:
 			GTI_f.flush()
 			GTI_f.close()
 
-	def base(self,binwidth=0.64):
+	def base(self,binwidth=0.64): # only necessary for inspection purpose
 		if not os.path.exists(self.datadir+'/base.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
@@ -295,10 +307,48 @@ class TIMEWINDOW:
 			base_f.close()
 			GTI_f.close()
 			f.close()
-			
 
-	def plotbase(self):
+	# necessary
+	# same with base() but only save cs (netlc data)
+	def binned_netlc(self,binwidth=0.64): 
+		if not os.path.exists(self.datadir+'/binned_netlc.h5'):
+			f = h5py.File(self.datadir+'/data.h5',mode='r')
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			net_f = h5py.File(self.datadir+'/binned_netlc.h5',mode='w')
+			for i in range(14):
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				t = f['/'+Det[i]+'/t'][()]
+				ch = f['/'+Det[i]+'/ch'][()]
+				for ii in range(nGTI):
+					for chno in np.arange(CH1,CH2+1):						
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						histvalue, histbin=np.histogram(t[ch==chno],bins=tbins)
+						rate = histvalue/binwidth
+						r.assign('rrate',rate) 
+						r("y=matrix(rrate,nrow=1)")
+						fillPeak_hwi = str(int(5/binwidth))
+						fillPeak_int = str(int(len(rate)/10))
+						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
+							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
+						r("bs=getBaseline(rbase)")
+						r("cs=getCorrected(rbase)")
+						bs = np.array(r('bs'))[0]
+						cs = np.array(r('cs'))[0]
+						# correct negative base to 0 and recover the net value to original rate
+						corrections_index = (bs < 0)
+						bs[corrections_index] = 0
+						cs[corrections_index] = rate[corrections_index]
+						net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)] = cs
+			net_f.attrs["binwidth"] = 	str(binwidth)		
+			net_f.flush()
+			net_f.close()
+			GTI_f.close()
+			f.close()
+
+	def plotbase(self): # only necessary for inspection purpose
 		if not os.path.exists(self.resultdir+'/base.png'):
+			assert os.path.exists(self.datadir+'/base.h5'), 'Should have run base() first!'
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
@@ -330,9 +380,10 @@ class TIMEWINDOW:
 
 	def plotnetlc(self):
 		if not os.path.exists(self.resultdir+'/netlc.png'):
+			assert os.path.exists(self.datadir+'/binned_netlc.h5'), 'Should have run binned_netlc() first!'
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
-			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
+			net_f = h5py.File(self.datadir+'/binned_netlc.h5',mode='r')
+			binwidth = np.float(net_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			plotBGOmax=0.0
@@ -341,10 +392,10 @@ class TIMEWINDOW:
 				GTI_array = GTI_f['/'+Det[i]][()]
 				nGTI = len(GTI_array[0])
 				for ii in range(nGTI):
-					rate, bs, cs = np.sum([base_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0)			
+					net = np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0)			
 					tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
-					plotcs = np.concatenate(([cs[0]],cs))
-					axes[i//2,i%2].plot(tbins,plotcs,drawstyle='steps',color='C0')
+					net = np.concatenate(([net[0]],net))
+					axes[i//2,i%2].plot(tbins,net,drawstyle='steps',color='C0')
 				if i <=1:
 					BGOmax = axes[i//2,i%2].get_ylim()[1]
 					if plotBGOmax < BGOmax:
@@ -368,5 +419,57 @@ class TIMEWINDOW:
 								va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/netlc.png')
 			plt.close()
-			base_f.close()
+			net_f.close()
+			GTI_f.close()
+
+	def check_netlc_gaussian_distribution(self,sigma=3):
+		if not os.path.exists(self.resultdir+'/netlc_gaussian_distribution.png'):
+			assert os.path.exists(self.datadir+'/binned_netlc.h5'), 'Should have run base() first!'
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			net_f = h5py.File(self.datadir+'/binned_netlc.h5',mode='r')
+			binwidth = np.float(net_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=False,sharey=False)
+			for i in range(14):
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				net = np.concatenate(np.array([np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0) for ii in range(nGTI)]))
+
+				mask = sigma_clip(net,sigma=5,maxiters=5,stdfunc=mad_std).mask
+				myfilter = list(map(operator.not_, mask))
+				net_median_part = net[myfilter]
+				loc,scale = stats.norm.fit(net_median_part)
+				significance = (net_median_part - loc) / scale
+				bins = np.arange((net.min()-loc)/scale,(net.max()-loc)/scale,
+					(net_median_part.max()-net_median_part.min()-loc)/scale/25)
+				histvalue, histbin = np.histogram((net-loc)/scale,bins=bins)
+				histvalue = np.concatenate(([histvalue[0]],histvalue))
+				axes[i//2,i%2].fill_between(histbin,histvalue,step='pre',
+												label='Significance of observed net rate')
+				
+				Y = stats.norm(loc=0,scale=1)
+				x = np.linspace((net_median_part.min()-loc)/scale,
+								(net_median_part.max()-loc)/scale,
+								num=100)
+				axes[i//2,i%2].plot(x,Y.pdf(x)*net.size*(bins[1]-bins[0]),
+							label='Gaussian Distribution within clipped region',
+							linestyle='--',lw=3.0,color='tab:orange')
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.5,0.8,Det[i],fontsize=25,
+								transform=axes[i//2,i%2].transAxes)
+				gaussian_level = Y.interval(norm_pvalue(sigma))
+				axes[i//2,i%2].axvline(gaussian_level[0],ls='--',lw=2,
+							color='green',label=str(sigma)+'$\sigma$ level')
+				axes[i//2,i%2].axvline(gaussian_level[1],ls='--',lw=2,
+							color='green')
+				axes[i//2,i%2].set_xlim([-5,axes[i//2,i%2].get_xlim()[1]])
+				if i == 1:
+					axes[i//2,i%2].legend(fontsize=20)
+			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
+									rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'Significance ($\sigma$)',
+						ha='center', va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/netlc_gaussian_distribution.png')
+			plt.close()
+			net_f.close()
 			GTI_f.close()

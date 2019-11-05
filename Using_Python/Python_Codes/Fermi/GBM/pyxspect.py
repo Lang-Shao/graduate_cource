@@ -9,7 +9,7 @@ def inspect_GRB(pars):
 	if grb.dataready:
 		#currently useful
 		grb.rawlc(viewt1=-50,viewt2=300,binwidth=0.064)
-		grb.base(baset1=-50,baset2=300,binwidth=0.064) #MUST RUN
+		grb.base(baset1=-50,baset2=300,binwidth=0.64) #MUST RUN
 		grb.plot_gaussian_significance_net_rate()
 		grb.check_pulse()
 		grb.plot_significance_lightcurve()
