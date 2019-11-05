@@ -5,10 +5,11 @@ matplotlib.use('Agg')
 @timer
 def inspect_timewindow(winname, StartUTC, EndUTC, resultdir='./'):
 	slice1= TIMEWINDOW(winname, StartUTC, EndUTC, resultdir=resultdir)
-	slice1.plotrawlc_genGTI()
+	slice1.plot_rawlc_genGTI()
 	slice1.binned_netlc()
-	slice1.plotnetlc()
+	slice1.plot_netlc()
 	slice1.check_netlc_gaussian_distribution()
+	slice1.plot_netlc_significance()
 
 ############
 # RUN MAIN #

@@ -226,7 +226,7 @@ class TIMEWINDOW:
 			f.close()
 	
 	# necessary; generating with GTI
-	def plotrawlc_genGTI(self, binwidth=0.64):
+	def plot_rawlc_genGTI(self, binwidth=0.64):
 		if not os.path.exists(self.datadir+'/GTI.h5'):
 			f = h5py.File(self.datadir+'/data.h5',mode='r')
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='w')
@@ -346,7 +346,7 @@ class TIMEWINDOW:
 			GTI_f.close()
 			f.close()
 
-	def plotbase(self): # only necessary for inspection purpose
+	def plot_base(self): # only necessary for inspection purpose
 		if not os.path.exists(self.resultdir+'/base.png'):
 			assert os.path.exists(self.datadir+'/base.h5'), 'Should have run base() first!'
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
@@ -378,7 +378,7 @@ class TIMEWINDOW:
 			base_f.close()
 			GTI_f.close()
 
-	def plotnetlc(self):
+	def plot_netlc(self):
 		if not os.path.exists(self.resultdir+'/netlc.png'):
 			assert os.path.exists(self.datadir+'/binned_netlc.h5'), 'Should have run binned_netlc() first!'
 			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
@@ -392,7 +392,8 @@ class TIMEWINDOW:
 				GTI_array = GTI_f['/'+Det[i]][()]
 				nGTI = len(GTI_array[0])
 				for ii in range(nGTI):
-					net = np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0)			
+					net = np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] 
+										for chno in np.arange(CH1,CH2+1)],axis=0)			
 					tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
 					net = np.concatenate(([net[0]],net))
 					axes[i//2,i%2].plot(tbins,net,drawstyle='steps',color='C0')
@@ -433,8 +434,9 @@ class TIMEWINDOW:
 			for i in range(14):
 				GTI_array = GTI_f['/'+Det[i]][()]
 				nGTI = len(GTI_array[0])
-				net = np.concatenate(np.array([np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0) for ii in range(nGTI)]))
-
+				net = np.concatenate(np.array([np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] 
+								for chno in np.arange(CH1,CH2+1)],axis=0) 
+												for ii in range(nGTI)]))
 				mask = sigma_clip(net,sigma=5,maxiters=5,stdfunc=mad_std).mask
 				myfilter = list(map(operator.not_, mask))
 				net_median_part = net[myfilter]
@@ -446,7 +448,6 @@ class TIMEWINDOW:
 				histvalue = np.concatenate(([histvalue[0]],histvalue))
 				axes[i//2,i%2].fill_between(histbin,histvalue,step='pre',
 												label='Significance of observed net rate')
-				
 				Y = stats.norm(loc=0,scale=1)
 				x = np.linspace((net_median_part.min()-loc)/scale,
 								(net_median_part.max()-loc)/scale,
@@ -470,6 +471,63 @@ class TIMEWINDOW:
 			fig.text(0.5, 0.05, 'Significance ($\sigma$)',
 						ha='center', va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/netlc_gaussian_distribution.png')
+			plt.close()
+			net_f.close()
+			GTI_f.close()
+
+	def plot_netlc_significance(self,sigma=3):
+		if not os.path.exists(self.resultdir+'/netlc_significance.png'):
+			assert os.path.exists(self.datadir+'/binned_netlc.h5'), 'Should have run base() first!'
+			GTI_f = h5py.File(self.datadir+'/GTI.h5',mode='r')
+			net_f = h5py.File(self.datadir+'/binned_netlc.h5',mode='r')
+			binwidth = np.float(net_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=False,sharey=False)
+			plotBGOmax=0.0
+			plotNaImax=0.0
+			for i in range(14):
+				GTI_array = GTI_f['/'+Det[i]][()]
+				nGTI = len(GTI_array[0])
+				net = np.concatenate(np.array([np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] for chno in np.arange(CH1,CH2+1)],axis=0) for ii in range(nGTI)]))
+				mask = sigma_clip(net,sigma=5,maxiters=5,stdfunc=mad_std).mask
+				myfilter = list(map(operator.not_, mask))
+				net_median_part = net[myfilter]
+				loc,scale = stats.norm.fit(net_median_part)
+				for ii in range(nGTI):
+					net = np.sum([net_f['/'+Det[i]+'/GTI'+str(ii)+'/ch'+str(chno)][()] 
+										for chno in np.arange(CH1,CH2+1)],axis=0)			
+					tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+					significance = (net-loc)/scale
+					significance = np.concatenate(([significance[0]],significance))
+					axes[i//2,i%2].plot(tbins,significance,drawstyle='steps',color='C0')
+				if i <=1:
+					BGOmax = axes[i//2,i%2].get_ylim()[1]
+					if plotBGOmax < BGOmax:
+						plotBGOmax = BGOmax
+				else:
+					NaImax = axes[i//2,i%2].get_ylim()[1]
+					if plotNaImax < NaImax:
+						plotNaImax = NaImax
+				axes[i//2,i%2].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
+				axes[i//2,i%2].tick_params(labelsize=25)
+				axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+									transform=axes[i//2,i%2].transAxes)
+				axes[i//2,i%2].axhline(sigma,
+					ls='--',lw=3,color='orange',
+					label=str(sigma)+'$\sigma$ level of gaussian background')
+			for i in range(14):
+				if i<=1:
+					#axes[i//2,i%2].set_ylim([0,plotBGOmax])
+					axes[i//2,i%2].set_ylim([0,10])
+				else:
+					#axes[i//2,i%2].set_ylim([0,plotNaImax])
+					axes[i//2,i%2].set_ylim([0,10])
+			axes[0,1].legend(fontsize=20)
+			fig.text(0.07, 0.5, 'Significance ($\sigma$)', ha='center',
+					va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
+							va='center',fontsize=30)	
+			plt.savefig(self.resultdir+'/netlc_significance.png')
 			plt.close()
 			net_f.close()
 			GTI_f.close()
