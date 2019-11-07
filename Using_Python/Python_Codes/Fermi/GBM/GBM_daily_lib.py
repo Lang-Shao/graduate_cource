@@ -482,7 +482,7 @@ class TIMEWINDOW:
 				combined_net_array.append(combined_net)
 				axes[plotid].set_xlim([self.Startmet,self.Endmet])
 				#axes[plotid].set_ylim([-10.0,axes[plotid].get_ylim()[1]])
-				axes[plotid].tick_params(labelsize=25)
+				axes[plotid].tick_params(labelsize=20)
 			axes[0].text(0.3,0.8,'BGOs',fontsize=25,
 									transform=axes[0].transAxes)
 			axes[1].text(0.3,0.8,'NaIs',fontsize=25,
@@ -524,7 +524,7 @@ class TIMEWINDOW:
 									transform=axes[0].transAxes)
 			axes[1].text(0.8,0.8,'NaIs',fontsize=25,
 									transform=axes[1].transAxes)
-			axes[0].legend(fontsize=20)
+			axes[0].legend(fontsize=10)
 			fig.text(0.03, 0.5, 'Numbers', ha='center', va='center',
 									rotation='vertical',fontsize=25)
 			fig.text(0.5, 0.05, 'Significance ($\sigma$)',
