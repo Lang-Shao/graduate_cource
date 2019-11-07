@@ -481,7 +481,7 @@ class TIMEWINDOW:
 				combined_net = np.concatenate([np.sum(np.array([net_thisplot[ll][kk] for ll in range(len(GTI_thisplot))]),axis=0) for kk in range(nGTI)])
 				combined_net_array.append(combined_net)
 				axes[plotid].set_xlim([self.Startmet,self.Endmet])
-				#axes[plotid].set_ylim([-10.0,axes[plotid].get_ylim()[1]])
+				axes[plotid].set_ylim([-10.0,axes[plotid].get_ylim()[1]])
 				axes[plotid].tick_params(labelsize=15)
 			axes[0].text(0.3,0.8,'BGOs',fontsize=25,
 									transform=axes[0].transAxes)
@@ -510,7 +510,7 @@ class TIMEWINDOW:
 				histvalue = np.concatenate(([histvalue[0]],histvalue))
 				axes[plotid].fill_between(histbin,histvalue,step='pre',
 												label='Significance of combined net rate')
-				x = np.arange(-5,10,0.1)
+				x = np.arange(-5,5,0.1)
 				axes[plotid].plot(x,Y.pdf(x)*significance.size*(bins[1]-bins[0]),
 							label='Gaussian Distribution',
 							linestyle='--',lw=3.0,color='tab:orange')
