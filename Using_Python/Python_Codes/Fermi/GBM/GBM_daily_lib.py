@@ -392,19 +392,18 @@ class TIMEWINDOW:
 			plt.close()
 			base_f.close()
 
-
-	def plot_combined_netlc_significance(self,binwidth=0.64,sigma=3.0):
-		if not os.path.exists(self.resultdir+'/combined_netlc.png'):
-			fig, axes = plt.subplots(2,1,figsize=(10, 12),
-									sharex=False,sharey=False)
-			combined_net_array = []
+	# two groups of dets as in BGOs and NaIs
+	def plot_combined_significance(self,binwidth=0.64,sigma=3.0):
+		if not os.path.exists(self.resultdir+'/combined_significance.png'):
+			fig, axes = plt.subplots(2,2,figsize=(20, 12),
+								gridspec_kw={'wspace': 0.3},sharex=False,sharey=False)
 			Y = stats.norm(loc=0,scale=1)
 			gaussian_level = Y.interval(norm_pvalue(sigma))
-			for plotid, dets in enumerate([BGO,NaI]):
-				timedata_thisplot = []
-				GTI_thisplot = []
-				for det in dets:
-					timedata = np.array([])					
+			for plotgroupid, dets_onegroup in enumerate([BGO,NaI]):
+				timedata_onegroup = []
+				GTI_onegroup = []
+				for det in dets_onegroup:
+					timedata_onedet = np.array([])					
 					for hourstr in self.hourlist:
 						year = hourstr[:4]
 						yearshort = hourstr[2:4]
@@ -427,32 +426,36 @@ class TIMEWINDOW:
 								ch_index = (ch>=CH1) & (ch<=CH2)
 								t=t[ch_index]
 								if len(t)>1:
-									timedata = np.concatenate([timedata, t])
-					if len(timedata) > 1000: # considered enough data for being a valid timewindow
-						timedata_thisplot.append(timedata)
-						GTI0_t1 = timedata[0]
-						GTI0_t2 = timedata[-1]
+									timedata_onedet = np.concatenate([timedata_onedet, t])
+					if len(timedata_onedet) > 1000: # considered enough data for being a valid timewindow
+						GTI0_t1 = timedata_onedet[0]
+						GTI0_t2 = timedata_onedet[-1]
 						# A gap is considered existing where neighboring photons separate for larger than 5 second
-						gapindex = (timedata[1:] - timedata[:-1]) > 5
+						gapindex = (timedata_onedet[1:] - timedata_onedet[:-1]) > 5
 						if np.sum(gapindex) >= 1:
-							GTI_t1 = np.array(np.append([GTI0_t1],timedata[1:][gapindex]))
-							GTI_t2 = np.array(np.append(timedata[:-1][gapindex],[GTI0_t2]))
-							GTI_array = np.array([GTI_t1,GTI_t2])
+							GTI_t1 = np.array(np.append([GTI0_t1],timedata_onedet[1:][gapindex]))
+							GTI_t2 = np.array(np.append(timedata_onedet[:-1][gapindex],[GTI0_t2]))
+							GTI_onedet = np.array([GTI_t1,GTI_t2])
 						else:
-							GTI_array = np.array([[GTI0_t1],[GTI0_t2]])
-						GTI_thisplot.append(GTI_array)
-				optimalGTI = GTI_thisplot[0]
-				for i in range(1,len(GTI_thisplot)):
-					assert optimalGTI.shape == GTI_thisplot[i].shape, "wrong GTI shape for:"+dets[i]
-					for GTIid in range(len(optimalGTI[0])):
-						optimalGTI[0][GTIid] = max(optimalGTI[0][GTIid],GTI_thisplot[i][0][GTIid])
-						optimalGTI[1][GTIid] = min(optimalGTI[1][GTIid],GTI_thisplot[i][1][GTIid])
-				net_thisplot = []
-				nGTI = len(optimalGTI[0])
-				for j, timedata in enumerate(timedata_thisplot):
-					net_thisdet = []				
-					for k in range(nGTI):
-						tbins = np.arange(optimalGTI[0][k], optimalGTI[1][k]+binwidth, binwidth)
+							GTI_onedet = np.array([[GTI0_t1],[GTI0_t2]])
+						timedata_onegroup.append(timedata_onedet)
+						GTI_onegroup.append(GTI_onedet)
+				nDet = len(timedata_onegroup) # number of valid dets in this group
+				optimalGTI_onegroup = GTI_onegroup[0]
+				for i in range(1,len(GTI_onegroup)):
+					assert optimalGTI_onegroup.shape == GTI_onegroup[i].shape, "wrong GTI shape for:"+dets_onegroup[i]
+					for GTIid in range(len(optimalGTI_onegroup[0])):
+						optimalGTI_onegroup[0][GTIid] = max(optimalGTI_onegroup[0][GTIid],
+																GTI_onegroup[i][0][GTIid])
+						optimalGTI_onegroup[1][GTIid] = min(optimalGTI_onegroup[1][GTIid],
+																GTI_onegroup[i][1][GTIid])
+				net_onegroup = []
+				nGTI = len(optimalGTI_onegroup[0])
+				for timedata in timedata_onegroup:
+					net_onedet = []				
+					for GTIid in range(nGTI):
+						tbins = np.arange(optimalGTI_onegroup[0][GTIid], 
+							optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
 						histvalue, histbin=np.histogram(timedata,bins=tbins)
 						rate = histvalue/binwidth
 						r.assign('rrate',rate) 
@@ -469,70 +472,57 @@ class TIMEWINDOW:
 						corrections_index = (bs < 0)
 						bs[corrections_index] = 0
 						cs[corrections_index] = rate[corrections_index]
-						net_thisdet.append(cs)
-					net_thisplot.append(net_thisdet)
-				for kk in range(nGTI):
-					tbins = np.arange(optimalGTI[0][kk], optimalGTI[1][kk]+binwidth, binwidth)
-					plotrate = np.sum(
-						np.array([net_thisplot[ll][kk]	for ll in range(len(GTI_thisplot))])
-																					,axis=0)
-					plotrate = np.concatenate(([plotrate[0]],plotrate))
-					axes[plotid].plot(tbins,plotrate,drawstyle='steps',color='C0')
-				combined_net = np.concatenate([np.sum(np.array([net_thisplot[ll][kk] for ll in range(len(GTI_thisplot))]),axis=0) for kk in range(nGTI)])
-				combined_net_array.append(combined_net)
-				axes[plotid].set_xlim([self.Startmet,self.Endmet])
-				axes[plotid].set_ylim([-10.0,axes[plotid].get_ylim()[1]])
-				axes[plotid].tick_params(labelsize=15)
-			axes[0].text(0.3,0.8,'BGOs',fontsize=25,
-									transform=axes[0].transAxes)
-			axes[1].text(0.3,0.8,'NaIs',fontsize=25,
-									transform=axes[1].transAxes)
-			fig.text(0.03, 0.5, 'Count rate (count/s)', ha='center',
-						va='center',rotation='vertical',fontsize=25)
-			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
-								va='center',fontsize=25)		
-			plt.savefig(self.resultdir+'/combined_netlc.png')
-			plt.close()
-			
-			# Begin another plot
-			fig, axes = plt.subplots(2,1,figsize=(10, 12),
-									sharex=False,sharey=False)
-			for plotid in range(2):
-				net = combined_net_array[plotid]
-				mask = sigma_clip(net,sigma=5,maxiters=5,stdfunc=mad_std).mask
+						net_onedet.append(cs)
+					net_onegroup.append(net_onedet)
+				combined_net_GTIs = [
+						np.sum(np.array([net_onegroup[detid][GTIid] for detid in range(nDet)]),axis=0)
+													 for GTIid in range(nGTI) ]
+				combined_net = np.concatenate(combined_net_GTIs)
+				mask = sigma_clip(combined_net,sigma=5,maxiters=5,stdfunc=mad_std).mask
 				myfilter = list(map(operator.not_, mask))
-				net_median_part = net[myfilter]
-				loc,scale = stats.norm.fit(net_median_part)
-				significance = (net-loc)/scale
-				bins = np.arange(significance.min(),significance.max(),
-					0.1)
+				combined_net_median_part = combined_net[myfilter]
+				loc,scale = stats.norm.fit(combined_net_median_part)
+				for GTIid in range(nGTI):
+					tbins = np.arange(optimalGTI_onegroup[0][GTIid], 
+							optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
+					significance = (combined_net_GTIs[GTIid] - loc) / scale
+					significance= np.concatenate(([significance[0]],significance))
+					axes[plotgroupid,1].plot(tbins,significance,drawstyle='steps',color='C0')
+				significance = (combined_net - loc)/scale
+				bins = np.arange(significance.min(), significance.max(), 0.2)
 				histvalue, histbin = np.histogram(significance,bins=bins)
 				histvalue = np.concatenate(([histvalue[0]],histvalue))
-				axes[plotid].fill_between(histbin,histvalue,step='pre',
-												label='Significance of combined net rate')
+				axes[plotgroupid,0].fill_between(histbin,histvalue,step='pre',
+												label='Detectors-combined')
 				x = np.arange(-5,5,0.1)
-				axes[plotid].plot(x,Y.pdf(x)*significance.size*(bins[1]-bins[0]),
+				axes[plotgroupid,0].plot(x,Y.pdf(x)*significance.size*(bins[1]-bins[0]),
 							label='Gaussian Distribution',
 							linestyle='--',lw=3.0,color='tab:orange')
-				axes[plotid].tick_params(labelsize=25)
-				axes[plotid].axvline(gaussian_level[0],ls='--',lw=2,
+				axes[plotgroupid,0].tick_params(labelsize=25)
+				axes[plotgroupid,0].set_xlim([-5,10])
+				axes[plotgroupid,0].axvline(gaussian_level[0],ls='--',lw=2,
 							color='green',label=str(sigma)+'$\sigma$ level')
-				axes[plotid].axvline(gaussian_level[1],ls='--',lw=2,
+				axes[plotgroupid,0].axvline(gaussian_level[1],ls='--',lw=2,
 							color='green')
-				#axes[plotid].set_xlim([-5,axes[plotid].get_xlim()[1]])
-				axes[plotid].set_xlim([-5,10])
-			axes[0].text(0.8,0.5,'BGOs',fontsize=25,
-									transform=axes[0].transAxes)
-			axes[1].text(0.8,0.5,'NaIs',fontsize=25,
-									transform=axes[1].transAxes)
-			axes[0].legend(fontsize=15)
-			fig.text(0.03, 0.5, 'Numbers', ha='center', va='center',
+				axes[plotgroupid,1].tick_params(labelsize=15)
+				axes[plotgroupid,1].set_xlim([self.Startmet,self.Endmet])
+				axes[plotgroupid,1].set_ylim([-0.01,axes[plotgroupid,1].get_ylim()[1]])
+			for i in range(2):
+				axes[0,i].text(0.1,0.8,'BGOs',fontsize=25,
+									transform=axes[0,i].transAxes)
+				axes[1,i].text(0.1,0.8,'NaIs',fontsize=25,
+									transform=axes[1,i].transAxes)
+			axes[0,0].legend(fontsize=15)
+			fig.text(0.52, 0.5, 'Significance ($\sigma$)', ha='center',
+						va='center',rotation='vertical',fontsize=25)
+			fig.text(0.75, 0.05, 'MET Time (s)', ha='center',
+								va='center',fontsize=25)
+			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
 									rotation='vertical',fontsize=25)
-			fig.text(0.5, 0.05, 'Significance ($\sigma$)',
-						ha='center', va='center',fontsize=25)		
-			plt.savefig(self.resultdir+'/combined_netlc_gaussian_distribution.png')
+			fig.text(0.3, 0.05, 'Significance ($\sigma$)',
+						ha='center', va='center',fontsize=25)
+			plt.savefig(self.resultdir+'/combined_significance.png')
 			plt.close()
-
 
 
 	def plot_netlc_significance(self,sigma=3):
