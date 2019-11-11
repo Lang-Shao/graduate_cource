@@ -583,7 +583,7 @@ class TIMEWINDOW:
 		if not os.path.exists(self.resultdir+'/max_snr_versus_binsize.png'):
 			fig, axes = plt.subplots(2,1,figsize=(10, 12),
 								gridspec_kw={'wspace': 0.3},sharex=False,sharey=False)
-			binsize_arr = np.arange(0.1,10,0.01)
+			binsize_arr = np.arange(0.1,1,0.05)
 			maxsnr = np.zeros(binsize_arr.size)
 			for plotgroupid, dets_onegroup in enumerate([BGO,NaI]):
 				timedata_onegroup = []
