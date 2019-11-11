@@ -367,7 +367,7 @@ class TIMEWINDOW:
 					histvalue, histbin = np.histogram((net-loc)/scale,bins=bins)
 					histvalue = np.concatenate(([histvalue[0]],histvalue))
 					axes[i//2,i%2].fill_between(histbin,histvalue,step='pre',
-													label='Significance of net rate')
+													label='SNR')
 					x = np.linspace((net_median_part.min()-loc)/scale,
 									(net_median_part.max()-loc)/scale,
 									num=100)
@@ -386,15 +386,15 @@ class TIMEWINDOW:
 						axes[i//2,i%2].legend(fontsize=20)
 			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
 									rotation='vertical',fontsize=30)
-			fig.text(0.5, 0.05, 'Significance ($\sigma$)',
+			fig.text(0.5, 0.05, 'Signal-to-Noise Ratio (SNR)',
 						ha='center', va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/netlc_gaussian_distribution.png')
 			plt.close()
 			base_f.close()
 
 	# two groups of dets as in BGOs and NaIs
-	def plot_combined_significance(self,binwidth=0.64,sigma=3.0):
-		if not os.path.exists(self.resultdir+'/combined_significance.png'):
+	def plot_combined_snr(self,binwidth=0.64,sigma=3.0):
+		if not os.path.exists(self.resultdir+'/combined_snr.png'):
 			fig, axes = plt.subplots(2,2,figsize=(20, 12),
 								gridspec_kw={'wspace': 0.3},sharex=False,sharey=False)
 			Y = stats.norm(loc=0,scale=1)
@@ -485,17 +485,17 @@ class TIMEWINDOW:
 				for GTIid in range(nGTI):
 					tbins = np.arange(optimalGTI_onegroup[0][GTIid], 
 							optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
-					significance = (combined_net_GTIs[GTIid] - loc) / scale
-					significance= np.concatenate(([significance[0]],significance))
-					axes[plotgroupid,1].plot(tbins,significance,drawstyle='steps',color='C0')
-				significance = (combined_net - loc)/scale
-				bins = np.arange(significance.min(), significance.max(), 0.2)
-				histvalue, histbin = np.histogram(significance,bins=bins)
+					snr = (combined_net_GTIs[GTIid] - loc) / scale
+					snr= np.concatenate(([snr[0]],snr))
+					axes[plotgroupid,1].plot(tbins,snr,drawstyle='steps',color='C0')
+				snr = (combined_net - loc)/scale
+				bins = np.arange(snr.min(), snr.max(), 0.2)
+				histvalue, histbin = np.histogram(snr,bins=bins)
 				histvalue = np.concatenate(([histvalue[0]],histvalue))
 				axes[plotgroupid,0].fill_between(histbin,histvalue,step='pre',
 												label='Detectors-combined')
 				x = np.arange(-5,5,0.1)
-				axes[plotgroupid,0].plot(x,Y.pdf(x)*significance.size*(bins[1]-bins[0]),
+				axes[plotgroupid,0].plot(x,Y.pdf(x)*snr.size*(bins[1]-bins[0]),
 							label='Gaussian Distribution',
 							linestyle='--',lw=3.0,color='tab:orange')
 				axes[plotgroupid,0].tick_params(labelsize=25)
@@ -513,20 +513,20 @@ class TIMEWINDOW:
 				axes[1,i].text(0.1,0.8,'NaIs',fontsize=25,
 									transform=axes[1,i].transAxes)
 			axes[0,0].legend(fontsize=15)
-			fig.text(0.52, 0.5, 'Significance ($\sigma$)', ha='center',
+			fig.text(0.52, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
 						va='center',rotation='vertical',fontsize=25)
 			fig.text(0.75, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=25)
 			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
 									rotation='vertical',fontsize=25)
-			fig.text(0.3, 0.05, 'Significance ($\sigma$)',
+			fig.text(0.3, 0.05, 'Signal-to-Noise Ratio (SNR)',
 						ha='center', va='center',fontsize=25)
-			plt.savefig(self.resultdir+'/combined_significance.png')
+			plt.savefig(self.resultdir+'/combined_snr.png')
 			plt.close()
 
 
-	def plot_netlc_significance(self,sigma=3):
-		if not os.path.exists(self.resultdir+'/netlc_significance.png'):
+	def plot_netlc_snr(self,sigma=3):
+		if not os.path.exists(self.resultdir+'/netlc_snr.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
@@ -545,9 +545,9 @@ class TIMEWINDOW:
 					for ii in range(nGTI):
 						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]			
 						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
-						significance = (net-loc)/scale
-						significance = np.concatenate(([significance[0]],significance))
-						axes[i//2,i%2].plot(tbins,significance,drawstyle='steps',color='C0')
+						snr = (net-loc)/scale
+						snr = np.concatenate(([snr[0]],snr))
+						axes[i//2,i%2].plot(tbins,snr,drawstyle='steps',color='C0')
 					if i <=1:
 						BGOmax = axes[i//2,i%2].get_ylim()[1]
 						if plotBGOmax < BGOmax:
@@ -571,10 +571,118 @@ class TIMEWINDOW:
 					#axes[i//2,i%2].set_ylim([0,plotNaImax])
 					axes[i//2,i%2].set_ylim([0,20])
 			axes[0,1].legend(fontsize=20)
-			fig.text(0.07, 0.5, 'Significance ($\sigma$)', ha='center',
+			fig.text(0.07, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
 					va='center',rotation='vertical',fontsize=30)
 			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
 							va='center',fontsize=30)	
-			plt.savefig(self.resultdir+'/netlc_significance.png')
+			plt.savefig(self.resultdir+'/netlc_snr.png')
 			plt.close()
 			base_f.close()
+
+	def plot_max_snr_versus_binsize(self):
+		if not os.path.exists(self.resultdir+'/max_snr_versus_binsize.png'):
+			fig, axes = plt.subplots(2,1,figsize=(10, 12),
+								gridspec_kw={'wspace': 0.3},sharex=False,sharey=False)
+			binsize_arr = np.arange(0.1,10,0.1)
+			maxsnr = np.zeros(binsize_arr.size)
+			for plotgroupid, dets_onegroup in enumerate([BGO,NaI]):
+				timedata_onegroup = []
+				GTI_onegroup = []
+				for det in dets_onegroup:
+					timedata_onedet = np.array([])					
+					for hourstr in self.hourlist:
+						year = hourstr[:4]
+						yearshort = hourstr[2:4]
+						month = hourstr[5:7]
+						day = hourstr[8:10]
+						hour = hourstr[11:13]+'z'
+						thisdatadir = DATABASEDIR+'/'+year+'/'+month+'/'+day+'/'
+						hourbegin_met = utc2met(hourstr)
+						hourend_met=hourbegin_met+3600.00
+						ttefile=glob(thisdatadir+'glg_tte_'+det+'_'+yearshort+month+day+'_'+hour+'_*')
+						filenum=len(ttefile)
+						if  filenum==1:
+							hdu=fits.open(ttefile[0])
+							t=hdu['EVENTS'].data.field(0)
+							ch=hdu['EVENTS'].data.field(1)
+							validindex=(t>=hourbegin_met) & (t<hourend_met) & (t>=self.Startmet) & (t<=self.Endmet)
+							t=t[validindex]
+							ch=ch[validindex]
+							if len(t)>1:
+								ch_index = (ch>=CH1) & (ch<=CH2)
+								t=t[ch_index]
+								if len(t)>1:
+									timedata_onedet = np.concatenate([timedata_onedet, t])
+					if len(timedata_onedet) > 1000: # considered enough data for being a valid timewindow
+						GTI0_t1 = timedata_onedet[0]
+						GTI0_t2 = timedata_onedet[-1]
+						# A gap is considered existing where neighboring photons separate for larger than 5 second
+						gapindex = (timedata_onedet[1:] - timedata_onedet[:-1]) > 5
+						if np.sum(gapindex) >= 1:
+							GTI_t1 = np.array(np.append([GTI0_t1],timedata_onedet[1:][gapindex]))
+							GTI_t2 = np.array(np.append(timedata_onedet[:-1][gapindex],[GTI0_t2]))
+							GTI_onedet = np.array([GTI_t1,GTI_t2])
+						else:
+							GTI_onedet = np.array([[GTI0_t1],[GTI0_t2]])
+						timedata_onegroup.append(timedata_onedet)
+						GTI_onegroup.append(GTI_onedet)
+				nDet = len(timedata_onegroup) # number of valid dets in this group
+				optimalGTI_onegroup = GTI_onegroup[0]
+				for i in range(1,len(GTI_onegroup)):
+					assert optimalGTI_onegroup.shape == GTI_onegroup[i].shape, "wrong GTI shape for:"+dets_onegroup[i]
+					for GTIid in range(len(optimalGTI_onegroup[0])):
+						optimalGTI_onegroup[0][GTIid] = max(optimalGTI_onegroup[0][GTIid],
+																GTI_onegroup[i][0][GTIid])
+						optimalGTI_onegroup[1][GTIid] = min(optimalGTI_onegroup[1][GTIid],
+																GTI_onegroup[i][1][GTIid])
+				nGTI = len(optimalGTI_onegroup[0])
+				for binid, binwidth in enumerate(binsize_arr):
+					net_onegroup = []
+					for timedata in timedata_onegroup:
+						net_onedet = []				
+						for GTIid in range(nGTI):
+							tbins = np.arange(optimalGTI_onegroup[0][GTIid], 
+								optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
+							histvalue, histbin=np.histogram(timedata,bins=tbins)
+							rate = histvalue/binwidth
+							r.assign('rrate',rate) 
+							r("y=matrix(rrate,nrow=1)")
+							fillPeak_hwi = str(int(5/binwidth))
+							fillPeak_int = str(int(len(rate)/10))
+							r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
+								+",it=10,int="+fillPeak_int+",method='fillPeaks')")
+							r("bs=getBaseline(rbase)")
+							r("cs=getCorrected(rbase)")
+							bs = np.array(r('bs'))[0]
+							cs = np.array(r('cs'))[0]
+							# correct negative base to 0 and recover the net value to original rate
+							corrections_index = (bs < 0)
+							bs[corrections_index] = 0
+							cs[corrections_index] = rate[corrections_index]
+							net_onedet.append(cs)
+						net_onegroup.append(net_onedet)
+					combined_net_GTIs = [
+							np.sum(np.array([net_onegroup[detid][GTIid] for detid in range(nDet)]),axis=0)
+														 for GTIid in range(nGTI) ]
+					combined_net = np.concatenate(combined_net_GTIs)
+					mask = sigma_clip(combined_net,sigma=5,maxiters=5,stdfunc=mad_std).mask
+					myfilter = list(map(operator.not_, mask))
+					combined_net_median_part = combined_net[myfilter]
+					loc,scale = stats.norm.fit(combined_net_median_part)
+					snr = (combined_net - loc)/scale
+					maxsnr[binid] = np.max(snr)
+				axes[plotgroupid].tick_params(labelsize=25)
+				axes[plotgroupid].plot(binsize_arr, maxsnr)
+				#axes[plotgroupid].set_xlim([-5,10])
+				axes[plotgroupid]
+			axes[0].text(0.1,0.8,'BGOs',fontsize=25,
+									transform=axes[0].transAxes)
+			axes[1].text(0.1,0.8,'NaIs',fontsize=25,
+									transform=axes[1].transAxes)
+			#axes[0].legend(fontsize=15)
+			fig.text(0.02, 0.5, 'Max SNR', ha='center',
+						va='center',rotation='vertical',fontsize=25)
+			fig.text(0.75, 0.05, 'Binsize (s)', ha='center',
+								va='center',fontsize=25)
+			plt.savefig(self.resultdir+'/max_snr_versus_binsize.png')
+			plt.close()
