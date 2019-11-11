@@ -237,7 +237,7 @@ class TIMEWINDOW:
 						rate = histvalue/binwidth
 						r.assign('rrate',rate) 
 						r("y=matrix(rrate,nrow=1)")
-						fillPeak_hwi = str(int(5/binwidth))
+						fillPeak_hwi = str(max(int(5/binwidth),1))
 						fillPeak_int = str(int(len(rate)/10))
 						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
 							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
@@ -460,7 +460,7 @@ class TIMEWINDOW:
 						rate = histvalue/binwidth
 						r.assign('rrate',rate) 
 						r("y=matrix(rrate,nrow=1)")
-						fillPeak_hwi = str(int(5/binwidth))
+						fillPeak_hwi = str(max(int(5/binwidth),1))
 						fillPeak_int = str(int(len(rate)/10))
 						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
 							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
@@ -647,8 +647,9 @@ class TIMEWINDOW:
 							rate = histvalue/binwidth
 							r.assign('rrate',rate) 
 							r("y=matrix(rrate,nrow=1)")
-							fillPeak_hwi = str(int(5/binwidth))
+							fillPeak_hwi = str(max(int(5/binwidth),1))
 							fillPeak_int = str(int(len(rate)/10))
+							print(fillPeak_hwi,fillPeak_int)
 							r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
 								+",it=10,int="+fillPeak_int+",method='fillPeaks')")
 							r("bs=getBaseline(rbase)")
