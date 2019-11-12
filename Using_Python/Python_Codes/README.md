@@ -36,6 +36,38 @@ import logging
 
 rpy2_logger.setLevel(logging.ERROR)   # will display errors, but not warnings
 
+My solution:
+
+# -supress rpy2 warnings
+
+import rpy2
+
+rpy2_ver = rpy2.__version__
+
+if rpy2_ver[0] == '2':
+
+	import warnings
+
+	from rpy2.rinterface import RRuntimeWarning
+
+	warnings.filterwarnings("ignore", category=RRuntimeWarning)
+
+else:
+
+	from rpy2.rinterface_lib.callbacks import logger as rpy2_logger
+
+	import logging
+
+	rpy2_logger.setLevel(logging.ERROR)
+
+rbaseline issue:
+----------------
+rpy2.rinterface_lib.embedded.RRuntimeError: Error in if (length(x) == nrow * ncol) x <- matrix(x, nrow, ncol) else { :   missing value where TRUE/FALSE needed
+
+warning: NAs produced by integer overflow.
+
+Reason:  the data points are too many [> 46340] for rbaseline
+
 
 h5py
 -----

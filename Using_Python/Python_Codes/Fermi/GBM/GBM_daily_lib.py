@@ -565,11 +565,11 @@ class TIMEWINDOW:
 						label=str(sigma)+'$\sigma$ level of gaussian background')
 			for i in range(14):
 				if i<=1:
-					#axes[i//2,i%2].set_ylim([0,plotBGOmax])
-					axes[i//2,i%2].set_ylim([0,20])
+					axes[i//2,i%2].set_ylim([0,plotBGOmax])
+					#axes[i//2,i%2].set_ylim([0,20])
 				else:
-					#axes[i//2,i%2].set_ylim([0,plotNaImax])
-					axes[i//2,i%2].set_ylim([0,20])
+					axes[i//2,i%2].set_ylim([0,plotNaImax])
+					#axes[i//2,i%2].set_ylim([0,20])
 			axes[0,1].legend(fontsize=20)
 			fig.text(0.07, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
 					va='center',rotation='vertical',fontsize=30)
