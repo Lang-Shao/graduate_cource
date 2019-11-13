@@ -18,7 +18,7 @@ if __name__ == '__main__':
 	#main()
 	cdir = os.getcwd()
 	resultdir = cdir+'/results/'
-	inspect_timewindow('window1', '2019-01-14 07:00:00',
+	inspect_timewindow('window1', '2019-01-14 00:00:00',
 			 '2019-01-14 23:59:59', resultdir=resultdir)
 	#inspect_timewindow('window2', '2019-01-14 18:54:00',
 	#		 '2019-01-14 21:05:00', resultdir=resultdir)

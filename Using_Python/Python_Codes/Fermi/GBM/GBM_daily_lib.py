@@ -570,7 +570,7 @@ class TIMEWINDOW:
 				else:
 					axes[i//2,i%2].set_ylim([0,plotNaImax])
 					#axes[i//2,i%2].set_ylim([0,20])
-			axes[0,1].legend(fontsize=20)
+			axes[0,1].legend(loc='upper center', fontsize=20)
 			fig.text(0.07, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
 					va='center',rotation='vertical',fontsize=30)
 			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
