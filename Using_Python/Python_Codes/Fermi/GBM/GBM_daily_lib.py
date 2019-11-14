@@ -9,7 +9,7 @@ import h5py
 import pandas as pd
 import numpy as np
 import functools
-import pysnooper
+#import pysnooper
 #@pysnooper.snoop('./log.txt')
 from astropy.io import fits
 from astropy.time import Time

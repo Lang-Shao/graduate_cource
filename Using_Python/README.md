@@ -7,6 +7,10 @@ https://www.anaconda.com/distribution/
 
 > bash Anaconda3-2019.03-Linux-x86_64.sh
 
+- recommend miniconda over anaconda 
+
+https://docs.conda.io/en/latest/miniconda.html
+
 - update 
 
 > conda update conda # updating conda itself
