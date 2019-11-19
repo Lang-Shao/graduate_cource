@@ -332,7 +332,6 @@ class TIMEWINDOW:
 						NaImax = axes[i//2,i%2].get_ylim()[1]
 						if plotNaImax < NaImax:
 							plotNaImax = NaImax
-					axes[i//2,i%2].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
 					axes[i//2,i%2].tick_params(labelsize=25)
 					axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
 										transform=axes[i//2,i%2].transAxes)
@@ -341,11 +340,54 @@ class TIMEWINDOW:
 					axes[i//2,i%2].set_ylim([-0.01,plotBGOmax])
 				else:
 					axes[i//2,i%2].set_ylim([-0.01,plotNaImax])
+			axes[0,0].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
 			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
 						va='center',rotation='vertical',fontsize=30)
 			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/netlc.png')
+			plt.close()
+			base_f.close()
+			
+	def plot_netlc_giventimerange(self,met1,met2):
+		if not os.path.exists(self.resultdir+'/netlc_giventimerange.png'):
+			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
+			binwidth = np.float(base_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=False)
+			plotBGOmax=0.0
+			plotNaImax=0.0
+			for i in range(14):
+				if '/GTI/'+Det[i] in base_f: # data exist for this Det
+					GTI_array = base_f['/GTI/'+Det[i]][()]
+					nGTI = len(GTI_array[0])
+					for ii in range(nGTI):
+						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]		
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						net = np.concatenate(([net[0]],net))
+						axes[i//2,i%2].plot(tbins,net,drawstyle='steps',color='C0')
+					if i <=1:
+						BGOmax = axes[i//2,i%2].get_ylim()[1]
+						if plotBGOmax < BGOmax:
+							plotBGOmax = BGOmax
+					else:
+						NaImax = axes[i//2,i%2].get_ylim()[1]
+						if plotNaImax < NaImax:
+							plotNaImax = NaImax
+					axes[i//2,i%2].tick_params(labelsize=25)
+					axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+										transform=axes[i//2,i%2].transAxes)
+			for i in range(14):
+				if i<=1:
+					axes[i//2,i%2].set_ylim([-0.01,plotBGOmax])
+				else:
+					axes[i//2,i%2].set_ylim([-0.01,plotNaImax])
+			axes[0,0].set_xlim([met1,met2])
+			fig.text(0.07, 0.5, 'Count rate (count/s)', ha='center',
+						va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
+								va='center',fontsize=30)		
+			plt.savefig(self.resultdir+'/netlc_giventimerange.png')
 			plt.close()
 			base_f.close()
 
@@ -388,7 +430,7 @@ class TIMEWINDOW:
 					axes[i//2,i%2].set_xlim([-5,axes[i//2,i%2].get_xlim()[1]])
 					if i == 1:
 						axes[i//2,i%2].legend(fontsize=20)
-			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
+			fig.text(0.07, 0.5, 'Frequency', ha='center', va='center',
 									rotation='vertical',fontsize=30)
 			fig.text(0.5, 0.05, 'Signal-to-Noise Ratio (SNR)',
 						ha='center', va='center',fontsize=30)		
@@ -508,7 +550,7 @@ class TIMEWINDOW:
 						va='center',rotation='vertical',fontsize=25)
 			fig.text(0.75, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=25)
-			fig.text(0.05, 0.5, 'Number', ha='center', va='center',
+			fig.text(0.05, 0.5, 'Frequency', ha='center', va='center',
 									rotation='vertical',fontsize=25)
 			fig.text(0.3, 0.05, 'Signal-to-Noise Ratio (SNR)',
 						ha='center', va='center',fontsize=25)
@@ -521,7 +563,7 @@ class TIMEWINDOW:
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
-									sharex=False,sharey=False)
+									sharex=True,sharey=False)
 			plotBGOmax=0.0
 			plotNaImax=0.0
 			for i in range(14):
@@ -547,7 +589,6 @@ class TIMEWINDOW:
 						NaImax = axes[i//2,i%2].get_ylim()[1]
 						if plotNaImax < NaImax:
 							plotNaImax = NaImax
-					axes[i//2,i%2].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
 					axes[i//2,i%2].tick_params(labelsize=25)
 					axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
 										transform=axes[i//2,i%2].transAxes)
@@ -561,6 +602,7 @@ class TIMEWINDOW:
 				else:
 					axes[i//2,i%2].set_ylim([0,plotNaImax])
 					#axes[i//2,i%2].set_ylim([0,20])
+			axes[0,0].set_xlim([GTI_array[0][0],GTI_array[1][-1]])
 			axes[0,1].legend(loc='upper center', fontsize=20)
 			fig.text(0.07, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
 					va='center',rotation='vertical',fontsize=30)
@@ -569,6 +611,50 @@ class TIMEWINDOW:
 			plt.savefig(self.resultdir+'/netlc_snr.png')
 			plt.close()
 			base_f.close()
+
+	def plot_netlc_snr_giventimerange(self,met1,met2,sigma=3):
+		if not os.path.exists(self.resultdir+'/netlc_snr_giventimerange.png'):
+			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
+			binwidth = np.float(base_f.attrs['binwidth'])
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=True)
+			for i in range(14):
+				if '/GTI/'+Det[i] in base_f: # data exist for this Det
+					GTI_array = base_f['/GTI/'+Det[i]][()]
+					nGTI = len(GTI_array[0])
+					net = np.concatenate([base_f['/'+Det[i]+'/GTI'+str(ii)][()][2] for ii in range(nGTI)])
+					mask = sigma_clip(net,sigma=5,maxiters=5,stdfunc=mad_std).mask
+					myfilter = list(map(operator.not_, mask))
+					net_median_part = net[myfilter]
+					loc,scale = stats.norm.fit(net_median_part)
+					for ii in range(nGTI):
+						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]			
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						snr = (net-loc)/scale
+						snr = np.concatenate(([snr[0]],snr))
+						axes[i//2,i%2].plot(tbins,snr,drawstyle='steps',color='C0')
+					axes[i//2,i%2].tick_params(labelsize=25)
+					axes[i//2,i%2].text(0.05,0.85,Det[i],fontsize=25,
+										transform=axes[i//2,i%2].transAxes)
+					axes[i//2,i%2].axhline(sigma,
+						ls='--',lw=3,color='orange',
+						label=str(sigma)+'$\sigma$ level of gaussian background')
+			axes[0,0].set_ylim([0,10])
+			axes[0,0].set_xlim([met1,met2])
+			axes[0,1].legend(loc='upper center', fontsize=20)
+			fig.text(0.07, 0.5, 'Signal-to-Noise Ratio (SNR)', ha='center',
+					va='center',rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
+							va='center',fontsize=30)	
+			plt.savefig(self.resultdir+'/netlc_snr_giventimerange.png')
+			plt.close()
+			base_f.close()
+
+	def plot_hardness_ratio(self):
+		if not os.path.exists(self.resultdir+'/hardness_ratio.png'):
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=False,sharey=False)
+			
 
 	def plot_max_snr_versus_binsize(self):
 		if not os.path.exists(self.resultdir+'/max_snr_versus_binsize.png'):
