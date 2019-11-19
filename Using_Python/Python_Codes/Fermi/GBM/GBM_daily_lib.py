@@ -69,6 +69,23 @@ def norm_pvalue(sigma=3.0):
 	p = stats.norm.cdf(sigma)-stats.norm.cdf(-sigma)
 	return p
 
+def rbaseline(rate,binwidth):
+	r.assign('rrate',rate) 
+	r("y=matrix(rrate,nrow=1)")
+	fillPeak_hwi = str(max(int(5/binwidth),1))
+	fillPeak_int = str(int(len(rate)/10))
+	r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
+		+",it=10,int="+fillPeak_int+",method='fillPeaks')")
+	r("bs=getBaseline(rbase)")
+	r("cs=getCorrected(rbase)")
+	bs = np.array(r('bs'))[0]
+	cs = np.array(r('cs'))[0]
+	# correct negative base to 0 and recover the net value to original rate
+	corrections_index = (bs < 0)
+	bs[corrections_index] = 0
+	cs[corrections_index] = rate[corrections_index]
+	return bs,cs	
+
 
 def timer(func):
 	"""Print the runtime of the decorated function"""
@@ -235,20 +252,7 @@ class TIMEWINDOW:
 						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
 						histvalue, histbin=np.histogram(timedata,bins=tbins)
 						rate = histvalue/binwidth
-						r.assign('rrate',rate) 
-						r("y=matrix(rrate,nrow=1)")
-						fillPeak_hwi = str(max(int(5/binwidth),1))
-						fillPeak_int = str(int(len(rate)/10))
-						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
-							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
-						r("bs=getBaseline(rbase)")
-						r("cs=getCorrected(rbase)")
-						bs = np.array(r('bs'))[0]
-						cs = np.array(r('cs'))[0]
-						# correct negative base to 0 and recover the net value to original rate
-						corrections_index = (bs < 0)
-						bs[corrections_index] = 0
-						cs[corrections_index] = rate[corrections_index]
+						bs, cs = rbaseline(rate, binwidth)
 						base_f['/'+Det[i]+'/GTI'+str(ii)] = np.array([rate,bs,cs])
 					#plot raw lc
 					tbins = np.arange(GTI0_t1,GTI0_t2+binwidth,binwidth)
@@ -458,20 +462,7 @@ class TIMEWINDOW:
 							optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
 						histvalue, histbin=np.histogram(timedata,bins=tbins)
 						rate = histvalue/binwidth
-						r.assign('rrate',rate) 
-						r("y=matrix(rrate,nrow=1)")
-						fillPeak_hwi = str(max(int(5/binwidth),1))
-						fillPeak_int = str(int(len(rate)/10))
-						r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
-							+",it=10,int="+fillPeak_int+",method='fillPeaks')")
-						r("bs=getBaseline(rbase)")
-						r("cs=getCorrected(rbase)")
-						bs = np.array(r('bs'))[0]
-						cs = np.array(r('cs'))[0]
-						# correct negative base to 0 and recover the net value to original rate
-						corrections_index = (bs < 0)
-						bs[corrections_index] = 0
-						cs[corrections_index] = rate[corrections_index]
+						_, cs = rbaseline(rate, binwidth)
 						net_onedet.append(cs)
 					net_onegroup.append(net_onedet)
 				combined_net_GTIs = [
@@ -517,7 +508,7 @@ class TIMEWINDOW:
 						va='center',rotation='vertical',fontsize=25)
 			fig.text(0.75, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=25)
-			fig.text(0.07, 0.5, 'Numbers', ha='center', va='center',
+			fig.text(0.05, 0.5, 'Number', ha='center', va='center',
 									rotation='vertical',fontsize=25)
 			fig.text(0.3, 0.05, 'Signal-to-Noise Ratio (SNR)',
 						ha='center', va='center',fontsize=25)
@@ -645,22 +636,7 @@ class TIMEWINDOW:
 								optimalGTI_onegroup[1][GTIid]+binwidth, binwidth)
 							histvalue, histbin=np.histogram(timedata,bins=tbins)
 							rate = histvalue/binwidth
-							r.assign('rrate',rate) 
-							r("y=matrix(rrate,nrow=1)")
-							fillPeak_hwi = str(max(int(5/binwidth),1))
-							fillPeak_int = str(int(len(rate)/10))
-							print(fillPeak_hwi,fillPeak_int)
-							print(rate,max(rate),min(rate),len(rate))
-							r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
-								+",it=10,int="+fillPeak_int+",method='fillPeaks')")
-							r("bs=getBaseline(rbase)")
-							r("cs=getCorrected(rbase)")
-							bs = np.array(r('bs'))[0]
-							cs = np.array(r('cs'))[0]
-							# correct negative base to 0 and recover the net value to original rate
-							corrections_index = (bs < 0)
-							bs[corrections_index] = 0
-							cs[corrections_index] = rate[corrections_index]
+							_, cs = rbaseline(rate, binwidth)
 							net_onedet.append(cs)
 						net_onegroup.append(net_onedet)
 					combined_net_GTIs = [
