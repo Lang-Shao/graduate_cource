@@ -52,6 +52,19 @@ CH2 = 124
 # SOME FUNCTIONS #
 ##################
 
+def timer(func):
+	"""Print the runtime of the decorated function"""
+	@functools.wraps(func)
+	def wrapper_timer(*args,**kwargs):
+		print(f"Running {func.__name__!r} for:",args[0],"...")
+		start_time=time.perf_counter()
+		value=func(*args,**kwargs)
+		end_time=time.perf_counter()
+		run_time=end_time-start_time
+		print(f"Finished {func.__name__!r} for {args[0]} in {run_time:.4f} sec")
+		return value
+	return wrapper_timer
+
 def set_ncore():
 	Ncore = os.cpu_count()
 	if Ncore < 10:
@@ -85,20 +98,6 @@ def rbaseline(rate,binwidth):
 	bs[corrections_index] = 0
 	cs[corrections_index] = rate[corrections_index]
 	return bs,cs	
-
-
-def timer(func):
-	"""Print the runtime of the decorated function"""
-	@functools.wraps(func)
-	def wrapper_timer(*args,**kwargs):
-		print(f"Running {func.__name__!r} for:",args[0],"...")
-		start_time=time.perf_counter()
-		value=func(*args,**kwargs)
-		end_time=time.perf_counter()
-		run_time=end_time-start_time
-		print(f"Finished {func.__name__!r} for {args[0][0]} in {run_time:.4f} sec")
-		return value
-	return wrapper_timer
 
 def utc2met(myUTCstring):
 	UTC0=Time('2001-01-01',format='iso',scale='utc')
@@ -306,6 +305,7 @@ class TIMEWINDOW:
 			plt.savefig(self.resultdir+'/base.png')
 			plt.close()
 			base_f.close()
+
 
 	def plot_netlc(self):
 		if not os.path.exists(self.resultdir+'/netlc.png'):
@@ -559,7 +559,6 @@ class TIMEWINDOW:
 						ha='center', va='center',fontsize=25)
 			plt.savefig(self.resultdir+'/combined_snr.png')
 			plt.close()
-
 
 	def plot_netlc_snr(self,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_snr.png'):
