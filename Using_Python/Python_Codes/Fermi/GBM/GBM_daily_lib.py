@@ -65,7 +65,7 @@ def set_ncore():
 # cdfprob = 0.997300203937 # 3 sigma
 # cdfprob = 0.954499736104 # 2 sigma
 # cdfprob = 0.682689492137 # 1 sigma
-def norm_pvalue(sigma=3.0):
+def norm_pvalue(sigma=5.0):
 	p = stats.norm.cdf(sigma)-stats.norm.cdf(-sigma)
 	return p
 
@@ -391,7 +391,7 @@ class TIMEWINDOW:
 			plt.close()
 			base_f.close()
 
-	def check_netlc_gaussian_distribution(self,sigma=3):
+	def check_netlc_gaussian_distribution(self,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_gaussian_distribution.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
@@ -439,7 +439,7 @@ class TIMEWINDOW:
 			base_f.close()
 
 	# two groups of dets as in BGOs and NaIs
-	def plot_combined_snr(self,binwidth=0.64,sigma=3.0):
+	def plot_combined_snr(self,binwidth=0.64,sigma=5):
 		if not os.path.exists(self.resultdir+'/combined_snr.png'):
 			fig, axes = plt.subplots(2,2,figsize=(20, 12),
 								gridspec_kw={'wspace': 0.3},sharex=False,sharey=False)
@@ -540,6 +540,9 @@ class TIMEWINDOW:
 				axes[plotgroupid,1].tick_params(labelsize=15)
 				axes[plotgroupid,1].set_xlim([self.Startmet,self.Endmet])
 				axes[plotgroupid,1].set_ylim([-0.01,axes[plotgroupid,1].get_ylim()[1]])
+				axes[plotgroupid,1].axhline(sigma,
+						ls='--',lw=3,color='orange',
+						label=str(sigma)+'$\sigma$ level of gaussian background')
 			for i in range(2):
 				axes[0,i].text(0.1,0.8,'BGOs',fontsize=25,
 									transform=axes[0,i].transAxes)
@@ -558,7 +561,7 @@ class TIMEWINDOW:
 			plt.close()
 
 
-	def plot_netlc_snr(self,sigma=3):
+	def plot_netlc_snr(self,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_snr.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
@@ -612,7 +615,7 @@ class TIMEWINDOW:
 			plt.close()
 			base_f.close()
 
-	def plot_netlc_snr_giventimerange(self,met1,met2,sigma=3):
+	def plot_netlc_snr_giventimerange(self,met1,met2,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_snr_giventimerange.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
 			binwidth = np.float(base_f.attrs['binwidth'])
