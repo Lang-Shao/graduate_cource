@@ -25,5 +25,7 @@ if __name__ == '__main__':
 	#		 '2019-01-14 23:59:59.9999', resultdir=resultdir)
 	#inspect_timewindow('window2', '2019-01-14 18:54:00',
 	#		 '2019-01-14 21:05:00', resultdir=resultdir)
-	inspect_timewindow('tgf', '2016-06-07 09:16:08.3906',
-			 '2016-06-07 09:17:48.3906', binwidth=0.001, resultdir=resultdir)
+	#inspect_timewindow('tgf', '2016-06-07 09:16:08.3906',
+	#		 '2016-06-07 09:17:48.3906', binwidth=0.001, resultdir=resultdir)
+	inspect_timewindow('solarflare', '2019-05-06 05:00:00',
+			 '2019-05-06 05:30:00', binwidth=0.64, resultdir=resultdir)
