@@ -79,7 +79,7 @@ To review your selection:
 
 > conda install jupyter
 
-> conda install -c conda-forge spherical-geometry
+> conda install -c conda-forge spherical-geometry (conflicts with python3.7)
 
 > conda install -c anaconda basemap 
 
