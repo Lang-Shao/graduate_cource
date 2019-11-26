@@ -4,7 +4,54 @@
 #convert -delay 40 -resize 800x600 -loop 0 *.png animated.gif
 
 from zjh_gbmgeometry import *
+import os
 from multiprocessing import Pool
+
+
+def met2utc(myMET):
+	UTC0=Time('2001-01-01',format='iso',scale='utc')
+	if isinstance(myMET,(list,tuple,np.ndarray)):
+		myMETsize=len(myMET)
+		utc_tt_diff=np.zeros(myMETsize)
+		#from Fermi MET to UTC
+		# 4 leap seconds after 2007:
+		#'2008-12-31 23:59:60' MET=252460801.000000
+		#'2012-06-30 23:59:60' MET=362793602.000000
+		#'2015-06-30 23:59:60' MET=457401603.000000
+		#'2016-12-31 23:59:60' MET=504921604.000000
+		for i in range(myMETsize):
+			if myMET[i] < 239772945.000: # valid data start 9 weeks after the mission starts
+				print('**** ERROR: One of the MET TIME is not valid!!! ****')
+			elif myMET[i] <= 252460801.000:
+				utc_tt_diff[i]=33.0
+			elif myMET[i] <= 362793602.000:
+				utc_tt_diff[i]=34.0
+			elif myMET[i] <= 457401603.000:
+				utc_tt_diff[i]=35.0
+			elif myMET[i] <= 504921604.000:
+				utc_tt_diff[i]=36.0
+			else:
+				utc_tt_diff[i]=37.0
+		myTimeGPS=Time(np.array(myMET)+UTC0.gps-utc_tt_diff,format='gps')
+		return myTimeGPS.iso
+	elif np.isscalar(myMET):
+		if myMET < 239772945.000: # valid data start 9 weeks after the mission starts
+			print('**** ERROR: One of the MET TIME is not valid!!! ****')
+		elif myMET <= 252460801.000:
+			utc_tt_diff=33.0
+		elif myMET <= 362793602.000:
+			utc_tt_diff=34.0
+		elif myMET <= 457401603.000:
+			utc_tt_diff=35.0
+		elif myMET <= 504921604.000:
+			utc_tt_diff=36.0
+		else:
+			utc_tt_diff=37.0
+		myTimeGPS=Time(myMET+UTC0.gps-utc_tt_diff,format='gps')
+		return myTimeGPS.iso
+	else:
+		print('Check your input format!')
+		return None
 
 def utc2met(myUTCstring):
 	print(' ')
@@ -111,12 +158,12 @@ def my_detectorplot(timestr):
 #timelistarr=[' ']*len(hourstr)
 #for i in range(len(hourstr)):
 #	timelistarr[i]=daystr+hourstr[i]+timestr
-met1=utc2met(['2018-06-01 08:10:00'])
-met2=utc2met(['2018-06-01 08:20:00'])
-met_trig=utc2met(['2018-06-01 08:16:46.10'])
-met=np.arange(met1[0],met2[0],60.0)
+met1=utc2met(['2016-06-07 09:16:08'])
+met2=utc2met(['2016-06-07 09:17:48'])
+#met_trig=utc2met(['2018-06-01 08:16:46.10'])
+met=np.arange(met1[0],met2[0],5.0)
 print(met.size)
-timelist=met2utc_shao(met)
+timelist=met2utc(met)
 #grb = SkyCoord("13h09m48.085s -23d22m53.343s",frame = 'icrs')
 
 datadir = '/diska/Fermi_GBM_daily/data/'

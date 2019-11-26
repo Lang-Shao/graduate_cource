@@ -81,7 +81,7 @@ To review your selection:
 
 > conda install -c conda-forge spherical-geometry (conflicts with python3.7)
 
-> conda install -c anaconda basemap 
+> conda install -c conda-forge basemap 
 
 > conda install -c conda-forge pymc3
 

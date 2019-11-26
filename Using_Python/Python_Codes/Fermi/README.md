@@ -72,4 +72,6 @@ KeyError: 'PROJ_LIB' when: from mpl_toolkits.basemap import Basemap
 
 FileNotFoundError: [Errno 2] No such file or directory: '.../proj/epsg''
 
-> conda install -c conda-forge proj4
+* conda version of basemap needs the PROJ_LIB variable to be set so it can find the epsg data. proj4 6.0 has deteted epsg data.
+
+> conda create -n gbm python=3.6 basemap proj4=5.2
