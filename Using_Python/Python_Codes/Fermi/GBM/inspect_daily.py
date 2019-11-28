@@ -5,14 +5,17 @@ matplotlib.use('Agg')
 @timer
 def inspect_timewindow(winname, StartUTC, EndUTC, binwidth=0.64, resultdir='./'):
 	slice1 = TIMEWINDOW(winname, StartUTC, EndUTC, binwidth=binwidth, resultdir=resultdir)
+	slice1.make_ttedata()
+	slice1.plot_raw_lc_make_GTI_and_base()
 	slice1.plot_base()
 	#t0 = 486983822.3906 # TGF 2016-06-07 09:16:58.390600
 	#slice1.plot_netlc_giventimerange(t0-10,t0+10)
 	#slice1.plot_netlc_snr_giventimerange(t0-10,t0+10)
 	slice1.plot_netlc()
-	#slice1.check_netlc_gaussian_distribution()
+	slice1.check_netlc_gaussian_distribution()
 	slice1.plot_netlc_snr()
 	slice1.plot_combined_snr(binwidth=binwidth)
+	slice1.plot_raw_countmap()
 
 ############
 # RUN MAIN #

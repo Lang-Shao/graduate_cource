@@ -152,6 +152,23 @@ def met2utc(myMET):
 		print('Check your input format!')
 		return None
 		
+def get_emin_emax_array():
+	emin_array = []
+	emax_array = []
+	for i in range(14):
+		ttefile = glob(DATABASEDIR+'/2019/01/01/glg_tte_'+Det[i]+'_190101_00z_v*')
+		filenum = len(ttefile)
+		assert (filenum==1), 'check data base for reading emin_emax'
+		hdu = fits.open(ttefile[0])
+		ebound = hdu['EBOUNDS'].data
+		emin = ebound.field(1)
+		emin = emin[CH1:CH2+1]
+		emax = ebound.field(2)
+		emax = emax[CH1:CH2+1]
+		emin_array.append(emin)
+		emax_array.append(emax)
+	return emin_array, emax_array
+
 def get_hourlist(StartUTC,EndinUTC):
 	hourstrs=['00','01','02','03','04','05','06','07','08','09','10',\
 	'11','12','13','14','15','16','17','18','19','20','21','22','23']
@@ -199,41 +216,60 @@ class TIMEWINDOW:
 		self.Startmet = utc2met([StartUTC])[0]
 		self.Endmet = utc2met([EndUTC])[0]
 		self.resultdir = resultdir+'/'+winname+'/'
+		self.binwidth = binwidth
 		if not os.path.exists(self.resultdir):
 			os.makedirs(self.resultdir)
 		self.datadir = self.resultdir+'/data/'
 		if not os.path.exists(self.datadir):
 			os.makedirs(self.datadir)	
 		self.hourlist = get_hourlist(StartUTC,EndUTC)
-		if not os.path.exists(self.datadir+'/base.h5'):
-			base_f = h5py.File(self.datadir+'/base.h5',mode='w')
-			fig, axes = plt.subplots(7,2,figsize=(32, 20),
-									sharex=True,sharey=False)
+		
+	def make_ttedata(self):
+		if not os.path.exists(self.datadir+'/data.h5'):
+			f = h5py.File(self.datadir+'/data.h5',mode='w')
 			for i in range(14):
-				timedata = np.array([])
+				timeforsave = np.array([])
+				chforsave = np.array([])
 				for hourstr in self.hourlist:
 					year = hourstr[:4]
 					yearshort = hourstr[2:4]
 					month = hourstr[5:7]
 					day = hourstr[8:10]
 					hour = hourstr[11:13]+'z'
-					thisdatadir = DATABASEDIR+'/'+year+'/'+month+'/'+day+'/'
 					hourbegin_met = utc2met(hourstr)
-					hourend_met=hourbegin_met+3600.00
-					ttefile=glob(thisdatadir+'glg_tte_'+Det[i]+'_'+yearshort+month+day+'_'+hour+'_*')
-					filenum=len(ttefile)
+					hourend_met = hourbegin_met+3600.00
+					thisdatadir = DATABASEDIR+'/'+year+'/'+month+'/'+day+'/'
+					ttefile = glob(thisdatadir+'glg_tte_'+Det[i]+'_'+yearshort+month+day+'_'+hour+'_*')
+					filenum = len(ttefile)
 					if  filenum==1:
-						hdu=fits.open(ttefile[0])
-						t=hdu['EVENTS'].data.field(0)
-						ch=hdu['EVENTS'].data.field(1)
-						validindex=(t>=hourbegin_met) & (t<hourend_met) & (t>=self.Startmet) & (t<=self.Endmet)
-						t=t[validindex]
-						ch=ch[validindex]
+						hdu = fits.open(ttefile[0])
+						data = hdu['EVENTS'].data
+						t = data.field(0)
+						ch = data.field(1)
+						validindex = (t>=hourbegin_met) & (t<hourend_met) & (t>=self.Startmet) & (t<=self.Endmet)
+						t = t[validindex]
+						ch = ch[validindex]
 						if len(t)>1:
 							ch_index = (ch>=CH1) & (ch<=CH2)
-							t=t[ch_index]
+							t = t[ch_index]
+							ch = ch[ch_index]
 							if len(t)>1:
-								timedata = np.concatenate([timedata, t])
+								timeforsave = np.concatenate([timeforsave, t])
+								chforsave = np.int8(np.concatenate([chforsave, ch]))
+				if len(timeforsave)>1:
+					f['/'+Det[i]+'/t'] = timeforsave
+					f['/'+Det[i]+'/ch'] = chforsave
+			f.flush()
+			f.close()	
+
+	def plot_raw_lc_make_GTI_and_base(self):	
+		if not os.path.exists(self.datadir+'/base.h5'):
+			base_f = h5py.File(self.datadir+'/base.h5',mode='w')
+			data_f = h5py.File(self.datadir+'/data.h5',mode='r')
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),
+									sharex=True,sharey=False)
+			for i in range(14):
+				timedata = data_f['/'+Det[i]+'/t'][()]
 				if len(timedata) > 1000: # considered enough data for being a valid timewindow
 					GTI0_t1 = timedata[0]
 					GTI0_t2 = timedata[-1]
@@ -248,15 +284,15 @@ class TIMEWINDOW:
 					base_f['/GTI/'+Det[i]] = GTI_array
 					nGTI = len(GTI_array[0])
 					for ii in range(nGTI):
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						histvalue, histbin=np.histogram(timedata,bins=tbins)
-						rate = histvalue/binwidth
-						bs, cs = rbaseline(rate, binwidth)
+						rate = histvalue/self.binwidth
+						bs, cs = rbaseline(rate, self.binwidth)
 						base_f['/'+Det[i]+'/GTI'+str(ii)] = np.array([rate,bs,cs])
 					#plot raw lc
-					tbins = np.arange(GTI0_t1,GTI0_t2+binwidth,binwidth)
+					tbins = np.arange(GTI0_t1,GTI0_t2+self.binwidth,self.binwidth)
 					histvalue, histbin = np.histogram(timedata,bins=tbins)
-					plotrate = histvalue/binwidth
+					plotrate = histvalue/self.binwidth
 					plotrate = np.concatenate(([plotrate[0]],plotrate))
 					axes[i//2,i%2].plot(histbin,plotrate,drawstyle='steps')
 					if len(GTI_array[0]) > 1:
@@ -272,14 +308,71 @@ class TIMEWINDOW:
 			fig.text(0.5, 0.05, 'MET Time (s)', ha='center',
 								va='center',fontsize=30)		
 			plt.savefig(self.resultdir+'/raw_lc.png')
-			base_f.attrs["binwidth"] = 	str(binwidth)	
 			base_f.flush()
 			base_f.close()
+			data_f.close()
+
+	
+	def plot_raw_countmap(self):
+		if not os.path.exists(self.resultdir+'/rawcountmap.png'):
+			BGOmaxcolorvalue = 0.0
+			NaImaxcolorvalue = 0.0
+			C_array = []
+			data_f = h5py.File(self.datadir+'/data.h5',mode='r')
+			fig, axes = plt.subplots(7,2,figsize=(32, 20),sharex=True,sharey=False)
+			tbins=np.arange(self.Startmet,self.Endmet+self.binwidth,self.binwidth)
+			for i in range(14):
+				timedata = data_f['/'+Det[i]+'/t'][()]
+				chdata = data_f['/'+Det[i]+'/ch'][()]
+				C = np.array([np.histogram(timedata[chdata==chvalue],bins=tbins)[0] for chvalue in np.arange(CH1,CH2+1)])
+				C_array.append(C)
+				if i <= 1:
+					if BGOmaxcolorvalue < C.max():
+						BGOmaxcolorvalue = C.max()
+				else:
+					if NaImaxcolorvalue < C.max():
+						NaImaxcolorvalue = C.max()	
+			emin_array, emax_array = get_emin_emax_array()
+			for i in range(14):
+				emin = emin_array[i]
+				emax = emax_array[i]
+				x = tbins
+				y = np.concatenate((emin,[emax[-1]]))
+				X, Y = np.meshgrid(x, y)
+				C = C_array[i]
+				C[C < 1] = 1
+				axes[i//2,i%2].set_yscale('log')
+				if i <= 1:
+					pcmBGO = axes[i//2,i%2].pcolormesh(X, Y, C,
+						norm = colors.LogNorm(vmin=1.0, vmax=BGOmaxcolorvalue),
+						cmap='rainbow')
+					axes[i//2,i%2].yaxis.set_major_locator(ticker.FixedLocator([1000,10000]))
+				else:
+					pcmNaI = axes[i//2,i%2].pcolormesh(X, Y, C,
+						norm = colors.LogNorm(vmin=1.0, vmax=NaImaxcolorvalue),
+						cmap='rainbow')
+					axes[i//2,i%2].yaxis.set_major_locator(ticker.FixedLocator([10,100]))	
+				axes[i//2,i%2].tick_params(axis='both',top=True,right=True,
+						length=5,width=2,direction='out',which='both',labelsize=25)
+				axes[i//2,i%2].set_title(Det[i],loc='right',fontsize=25,color='k')
+			cbarBGO = fig.colorbar(pcmBGO, ax=axes[0,], orientation='vertical',
+									fraction=0.005, aspect=100/6)
+			cbarNaI = fig.colorbar(pcmNaI, ax=axes[1:,], orientation='vertical',
+									fraction=0.005, aspect=100)
+			cbarBGO.ax.tick_params(labelsize=25)
+			cbarNaI.ax.tick_params(labelsize=25)
+			fig.text(0.07, 0.5, 'Energy (KeV)', ha='center', va='center',
+					rotation='vertical',fontsize=30)
+			fig.text(0.5, 0.05, 'Time (s)', ha='center', va='center',fontsize=30)
+			plt.savefig(self.resultdir+'/rawcountmap.png')
+			plt.close()
+			data_f.close()
+
+
 
 	def plot_base(self): # only necessary for inspection purpose
 		if not os.path.exists(self.resultdir+'/base.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			for i in range(14):
@@ -288,7 +381,7 @@ class TIMEWINDOW:
 					nGTI = len(GTI_array[0])
 					for ii in range(nGTI):
 						rate, bs, cs = base_f['/'+Det[i]+'/GTI'+str(ii)][()]			
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						plotrate = np.concatenate(([rate[0]],rate))
 						plotbs = np.concatenate(([bs[0]],bs))
 						axes[i//2,i%2].plot(tbins,plotrate,drawstyle='steps',color='C0')
@@ -310,7 +403,6 @@ class TIMEWINDOW:
 	def plot_netlc(self):
 		if not os.path.exists(self.resultdir+'/netlc.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			plotBGOmax=0.0
@@ -321,7 +413,7 @@ class TIMEWINDOW:
 					nGTI = len(GTI_array[0])
 					for ii in range(nGTI):
 						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]		
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						net = np.concatenate(([net[0]],net))
 						axes[i//2,i%2].plot(tbins,net,drawstyle='steps',color='C0')
 					if i <=1:
@@ -352,7 +444,6 @@ class TIMEWINDOW:
 	def plot_netlc_giventimerange(self,met1,met2):
 		if not os.path.exists(self.resultdir+'/netlc_giventimerange.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			plotBGOmax=0.0
@@ -363,7 +454,7 @@ class TIMEWINDOW:
 					nGTI = len(GTI_array[0])
 					for ii in range(nGTI):
 						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]		
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						net = np.concatenate(([net[0]],net))
 						axes[i//2,i%2].plot(tbins,net,drawstyle='steps',color='C0')
 					if i <=1:
@@ -394,7 +485,6 @@ class TIMEWINDOW:
 	def check_netlc_gaussian_distribution(self,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_gaussian_distribution.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=False,sharey=False)
 			Y = stats.norm(loc=0,scale=1)
@@ -563,7 +653,6 @@ class TIMEWINDOW:
 	def plot_netlc_snr(self,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_snr.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=False)
 			plotBGOmax=0.0
@@ -579,7 +668,7 @@ class TIMEWINDOW:
 					loc,scale = stats.norm.fit(net_median_part)
 					for ii in range(nGTI):
 						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]			
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						snr = (net-loc)/scale
 						snr = np.concatenate(([snr[0]],snr))
 						axes[i//2,i%2].plot(tbins,snr,drawstyle='steps',color='C0')
@@ -617,7 +706,6 @@ class TIMEWINDOW:
 	def plot_netlc_snr_giventimerange(self,met1,met2,sigma=5):
 		if not os.path.exists(self.resultdir+'/netlc_snr_giventimerange.png'):
 			base_f = h5py.File(self.datadir+'/base.h5',mode='r')
-			binwidth = np.float(base_f.attrs['binwidth'])
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
 									sharex=True,sharey=True)
 			for i in range(14):
@@ -631,7 +719,7 @@ class TIMEWINDOW:
 					loc,scale = stats.norm.fit(net_median_part)
 					for ii in range(nGTI):
 						_, _, net = base_f['/'+Det[i]+'/GTI'+str(ii)][()]			
-						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+binwidth, binwidth)
+						tbins = np.arange(GTI_array[0][ii], GTI_array[1][ii]+self.binwidth, self.binwidth)
 						snr = (net-loc)/scale
 						snr = np.concatenate(([snr[0]],snr))
 						axes[i//2,i%2].plot(tbins,snr,drawstyle='steps',color='C0')
