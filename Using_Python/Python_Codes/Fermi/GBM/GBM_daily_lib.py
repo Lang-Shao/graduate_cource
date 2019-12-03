@@ -82,11 +82,12 @@ def norm_pvalue(sigma=5.0):
 	p = stats.norm.cdf(sigma)-stats.norm.cdf(-sigma)
 	return p
 
-def rbaseline(rate,binwidth):
+def rbaseline(rate,binwidth,halfpeakwidth=10):
 	r.assign('rrate',rate) 
 	r("y=matrix(rrate,nrow=1)")
-	fillPeak_hwi = str(max(int(5/binwidth),1))
-	fillPeak_int = str(int(len(rate)/10))
+	fillPeak_hwi = str(max(int(halfpeakwidth/binwidth),1)) # number of points of half width of widest peak
+	fillPeak_int = str(int(len(rate)/10)) # 1/10 of total number of points
+	# https://www.sciencedirect.com/science/article/pii/S2215016115000126
 	r("rbase=baseline(y,lam=6,hwi="+fillPeak_hwi
 		+",it=10,int="+fillPeak_int+",method='fillPeaks')")
 	r("bs=getBaseline(rbase)")
