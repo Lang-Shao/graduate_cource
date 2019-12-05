@@ -341,7 +341,7 @@ class TIMEWINDOW:
 				y = np.concatenate((emin,[emax[-1]]))
 				X, Y = np.meshgrid(x, y)
 				C = C_array[i]
-				C[C < 1] = 1
+				#C[C < 1] = 1 # to remove features for bad data
 				axes[i//2,i%2].set_yscale('log')
 				if i <= 1:
 					pcmBGO = axes[i//2,i%2].pcolormesh(X, Y, C,
@@ -741,6 +741,7 @@ class TIMEWINDOW:
 			plt.close()
 			base_f.close()
 
+	#TODO
 	def plot_hardness_ratio(self):
 		if not os.path.exists(self.resultdir+'/hardness_ratio.png'):
 			fig, axes = plt.subplots(7,2,figsize=(32, 20),
