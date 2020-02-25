@@ -25,8 +25,10 @@ Importing the integral module works like before, with additional prefixes to get
 
 	import math.calculus.integral
 
-Note that: 
+Note that:
+ 
 	from math import calculus.integral 
+
 won't work.
 
 
