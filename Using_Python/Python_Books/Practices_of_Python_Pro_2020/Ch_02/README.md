@@ -8,6 +8,7 @@ You can nest packages in a process similar to creating an initial package. Creat
 
 '''
 math
+
 	`__init__.py`
 	statistics
 		`__init__.py`
