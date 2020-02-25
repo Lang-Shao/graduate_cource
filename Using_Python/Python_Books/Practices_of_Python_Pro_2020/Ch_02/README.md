@@ -9,15 +9,15 @@ You can nest packages in a process similar to creating an initial package. Creat
 
 	math
 
-	__init__.py
-	statistics
 		__init__.py
-		std.py
-		cdf.py
-	calculus
-		__init__.py
-		integral.py
-	...
+		statistics
+			__init__.py
+			std.py
+			cdf.py
+		calculus
+			__init__.py
+			integral.py
+		...
 
 Importing the integral module works like before, with additional prefixes to get to the module of interest:
 
