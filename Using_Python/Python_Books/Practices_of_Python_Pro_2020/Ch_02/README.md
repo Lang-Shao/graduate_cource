@@ -7,15 +7,15 @@ This file is often empty, but it can be used for more complex management of impo
 You can nest packages in a process similar to creating an initial package. Create a directory with an `__init__.py` file, and put modules or packages inside:
 
 
->math
+	math
 
-	`__init__.py`
+	__init__.py
 	statistics
-		`__init__.py`
+		__init__.py
 		std.py
 		cdf.py
 	calculus
-		`__init__.py`
+		__init__.py
 		integral.py
 	...
 
