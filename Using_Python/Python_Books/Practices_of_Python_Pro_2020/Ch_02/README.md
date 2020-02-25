@@ -21,10 +21,12 @@ You can nest packages in a process similar to creating an initial package. Creat
 
 Importing the integral module works like before, with additional prefixes to get to the module of interest:
 
-> from math.calculus import integral
+	from math.calculus import integral
 
-> import math.calculus.integral
+	import math.calculus.integral
 
-Note that from math import calculus.integral won't work.
+Note that: 
+	from math import calculus.integral 
+won't work.
 
 
