@@ -1,20 +1,20 @@
 # python script for downloading Fermi/GBM triggered burst data
 # created by Shao on Oct. 8, 2018
-# last modified by Shao on May 9 2020
 import os
 import ast
 import sys
-import re
+from ftplib import FTP_TLS as FTP
 from glob import glob
-from urllib.request import urlopen
 from multiprocessing import Pool
 nthread=60
 
 #downburstlist=['bn091010113','bn101208498','bn120129580','bn120323507','bn120624309','bn130310840','bn140508128','bn180113011','bn180703949','bn181119606']
-#downburstlist=['bn180720598','bn190114873','bn190829830'] VHE bursts
-downburstlist=['bn200415367']
+downburstlist=['bn190114873']
 
-httpslink='https://heasarc.gsfc.nasa.gov/FTP/fermi/data/gbm/bursts/'
+
+fermidatabase='/fermi/data/gbm/bursts/'
+ftplink='https://heasarc.gsfc.nasa.gov/FTP/fermi/data/gbm/bursts/'
+f=FTP('129.164.179.23')
 
 topdir='./'
 mydatabase=topdir+'data/' 
@@ -39,12 +39,13 @@ for downburst in downburstlist:
 	year='20'+downburst[2:4]
 	if os.path.exists(mydatabase+year)== False:
 		os.makedirs(mydatabase+year)
-	
-	html = urlopen(httpslink+'/'+year+'/'+downburst+'/current/')
-	files=re.findall("href=[\"\'](glg.*?)[\/\"\']", html.read().decode('utf8'))
+	f.login()
+	f.prot_p()
+	f.cwd(fermidatabase+year+'/'+downburst+'/current/')
+	files=f.nlst()
 	with open(filelistdir+'list.txt','w') as newlistfile:
 		for filename in files:
-			newlistfile.write(httpslink+year+'/'+downburst+'/current/'+filename+'\n')
+			newlistfile.write(ftplink+year+'/'+downburst+'/current/'+filename+'\n')
 	with open(filelistdir+'list.txt') as downlistfile:
 		filelinks=downlistfile.readlines()
 		
