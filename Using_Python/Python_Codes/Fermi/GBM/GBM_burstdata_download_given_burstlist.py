@@ -30,7 +30,9 @@ if os.path.exists(mydatabase)== False:
 
 
 def wgetdown(link):
+	print("\ndownloading:"+link)
 	os.system('wget --quiet --directory-prefix='+mydowndir+' '+link)
+	print('***Finished****:'+link)
 
 
 for downburst in downburstlist:
@@ -50,7 +52,9 @@ for downburst in downburstlist:
 		
 	if __name__ == '__main__':
 		print('Downloading burst:',downburst, '...')
-		p = Pool(nthread)
-		p.map(wgetdown, filelinks)
+		#p = Pool(nthread)
+		#p.map(wgetdown, filelinks)
+		for link in filelinks:
+			wgetdown(link)
 	os.system('mkdir '+mydatabase+year+'/'+downburst)
 	os.system('mv '+mydowndir+'/* '+mydatabase+year+'/'+downburst)
