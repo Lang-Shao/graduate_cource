@@ -21,7 +21,7 @@ downyearlist=['2018']
 #	downmonthlist=['201808']
 # to run check by month
 # downmethod=2
-downmonthlist=['201906','201907','201908','201909']
+downmonthlist=['202008','202009']
 
 # 3: provide daylist as in
 #	downdaylist=['20130427','20150314']
@@ -322,10 +322,10 @@ def check_year_month_day(downdaylist):
 if downmethod==1:
 	check_year(downyearlist)
 
-if downmethod==2:
+elif downmethod==2:
 	check_year_month(downmonthlist)
 
-if downmethod==3:
+elif downmethod==3:
 	check_year_month_day(downdaylist)
 
 # download newfile and incompletefile, remove deletefile
