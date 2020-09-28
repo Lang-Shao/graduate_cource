@@ -103,3 +103,18 @@ Setup Jupyter notebook default folder in Anaconda
 ---------------------------------------------------
 
 http://darques.eu/blog/index.php/2017/08/25/setup-jupyter-notebook-default-folder-in-anaconda/
+
+
+Tips for jupyter
+-----------------
+
+https://ndres.me/post/best-jupyter-notebook-extensions/
+
+%lsmagic: Run this in a cell to list all available IPython magics
+
+autoreload: Autoreloads external files without having to restart the notebook. You may want to reload submodules if you've edited the code in one.
+To enable it:
+
+%load_ext autoreload
+
+%autoreload 2
