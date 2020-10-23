@@ -24,6 +24,8 @@ $ gedit ~/.gitignore and add:
 
 *.fits
 
+*.png
+
 \_\_pycache\_\_/
 
 .ipynb_checkpoints/
