@@ -6,7 +6,7 @@ Tips for git & git hub
 -----------------------
 
 
-$ git config --global user.name "John Doe"   
+$ git config --global user.name "John Doe" 
 
 $ git config --global user.email johndoe@example.com
 
@@ -25,6 +25,8 @@ $ gedit ~/.gitignore and add:
 *.fits
 
 *.png
+
+*.jpg
 
 \_\_pycache\_\_/
 
