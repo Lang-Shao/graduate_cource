@@ -6,14 +6,16 @@ import sys
 from ftplib import FTP_TLS as FTP
 from glob import glob
 from multiprocessing import Pool
-nthread=60
+nthread=50
 
+
+downmethod=2
 #=============================================
-downyearlist=['2018']
-downyear=False
+# if downmethod=1
+downyearlist=['2019']
 
-downmonthlist=['201905','201906']
-downmonth=True
+# if downmthod=2
+downmonthlist=['2019009','201910','201911','201912']
 
 #============================================
 # check the following directories
@@ -165,7 +167,7 @@ def check_month(downmonthlist):
 	f.quit()
 
 # check files provided in a downdaylist
-if downyear==True:
+if downmethod==1:
 	check_year(downyearlist)
 	# download newfile and incompletefile, remove deletefile
 	for year in downyearlist:
@@ -192,7 +194,7 @@ if downyear==True:
 			for flink in delfilelinks:
 				print, 'deleting '+flink
 				os.system('rm -f '+flink)
-elif downmonth==True:
+elif downmethod==2:
 	check_month(downmonthlist)
 	# download newfile and incompletefile, remove deletefile
 	for month in downmonthlist:
