@@ -87,7 +87,11 @@ To review your selection:
 
 > conda install jupyter
 
-> conda install -c conda-forge spherical-geometry (conflicts with python3.7)
+> conda install -c conda-forge spherical-geometry (conflicts with python3.7, works with 3.5 or 3.6)
+
+or 
+
+> conda install -c conda-forge/label/cf201901 spherical-geometry (works with 3.6)
 
 > conda install -c conda-forge basemap 
 
@@ -99,7 +103,7 @@ To review your selection:
 
 - update a package from a given channel
 
-> conda update -c conda-forge pymc3
+> conda update -c conda-forge pymc3py
 
 
 try jupyter online

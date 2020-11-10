@@ -25,3 +25,7 @@ into:
 Then there is no need to hamke for pyxspec.
 
 
+
+## for spherical-geometry, better use python=3.5 for gecam
+
+
