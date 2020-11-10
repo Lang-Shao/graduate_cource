@@ -77,6 +77,10 @@ To review your selection:
 
 > conda config --add channels conda-forge
 
+- To list all of the versions of spherical-geometry available on your platform with
+
+> conda search spherical-geometry [--channel conda-forge]
+
 - exmaple:
 
 > conda install python=3.6
