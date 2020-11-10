@@ -38,6 +38,8 @@ results/
 
 bad_sample/
 
+chains/
+
 [on windows: git config --global core.excludesfile "%USERPROFILE%\.gitignore"
 
 and the file should be at C:\User\Administrator\.gitignore]
