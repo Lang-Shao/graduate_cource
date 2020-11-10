@@ -73,6 +73,10 @@ To review your selection:
 
 > conda install -c channelname <package> # the same
 
+- adding conda-forge to your channels
+
+> conda config --add channels conda-forge
+
 - exmaple:
 
 > conda install python=3.6
