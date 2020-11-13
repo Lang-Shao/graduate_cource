@@ -24,6 +24,8 @@ $ gedit ~/.gitignore and add:
 
 *.fits
 
+*.rsp
+
 *.png
 
 *.jpg
