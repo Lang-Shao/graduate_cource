@@ -1,9 +1,14 @@
+Main Page:
+
 http://gecam.ihep.ac.cn/
 
-Test Data
+Test Data:
 
 http://gecam.ihep.ac.cn/testdata.jhtml
 
+Response Generator:
+
+http://gecam.ihep.ac.cn/xgwd.jhtml
 
 
 ##install Heasoft
@@ -27,5 +32,44 @@ Then there is no need to hamke for pyxspec.
 
 
 ## for spherical-geometry, better use python=3.6 for gecam
+
+
+##install gecam caldb
+
+Put the following into your ".bahsrc":
+
+> export HEADAS=/home/lang/Software/heasoft-6.28/x86_64-pc-linux-gnu-libc2.31
+
+> export CALDB=/home/lang/Software/heasoft-6.28/caldb
+
+> alias heainit=". $HEADAS/headas-init.sh"
+
+> alias caldbinit=". $CALDB/software/tools/caldbinit.sh"
+
+Put the followiing into your "caldbinit.sh":
+
+
+CALDB=/home/lang/Software/heasoft-6.28/caldb
+caldb_software_path=$CALDB/software/
+export CALDB
+export PYTHONPATH=$PYTHONPATH:$caldb_software_path
+echo CALDB_PATH $CALDB
+echo PYTHONPATH $PYTHONPATH
+
+if [ -z "$CALDB" ]; then
+    CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
+    caldb_software_path=$CALDB/software/
+    export PYTHONPATH=$PYTHONPATH:$caldb_software_path
+    echo CALDB_PATH $CALDB
+    echo PYTHONPATH $PYTHONPATH
+fi 
+
+if [ -z "$CALDBCONFIG" ]; then
+    CALDBCONFIG=$CALDB/software/tools/caldb.config; export CALDBCONFIG
+fi 
+
+if [ -z "$CALDBALIAS" ]; then
+    CALDBALIAS=$CALDB/software/tools/alias_config.fits; export CALDBALIAS
+fi 
 
 
