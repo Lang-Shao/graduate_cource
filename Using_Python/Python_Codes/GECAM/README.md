@@ -49,27 +49,30 @@ Put the following into your ".bahsrc":
 Put the followiing into your "caldbinit.sh":
 
 
-CALDB=/home/lang/Software/heasoft-6.28/caldb
-caldb_software_path=$CALDB/software/
-export CALDB
-export PYTHONPATH=$PYTHONPATH:$caldb_software_path
-echo CALDB_PATH $CALDB
-echo PYTHONPATH $PYTHONPATH
+> if [ -z "$CALDB" ]; then
 
-if [ -z "$CALDB" ]; then
-    CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
-    caldb_software_path=$CALDB/software/
-    export PYTHONPATH=$PYTHONPATH:$caldb_software_path
-    echo CALDB_PATH $CALDB
-    echo PYTHONPATH $PYTHONPATH
-fi 
+>    CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
 
-if [ -z "$CALDBCONFIG" ]; then
-    CALDBCONFIG=$CALDB/software/tools/caldb.config; export CALDBCONFIG
-fi 
+>    caldb_software_path=$CALDB/software/
 
-if [ -z "$CALDBALIAS" ]; then
-    CALDBALIAS=$CALDB/software/tools/alias_config.fits; export CALDBALIAS
-fi 
+>    export PYTHONPATH=$PYTHONPATH:$caldb_software_path
+
+>    echo CALDB_PATH $CALDB
+
+>    echo PYTHONPATH $PYTHONPATH
+
+> fi 
+
+> if [ -z "$CALDBCONFIG" ]; then
+
+>    CALDBCONFIG=$CALDB/software/tools/caldb.config; export CALDBCONFIG
+
+> fi 
+
+> if [ -z "$CALDBALIAS" ]; then
+
+>    CALDBALIAS=$CALDB/software/tools/alias_config.fits; export CALDBALIAS
+
+> fi 
 
 
