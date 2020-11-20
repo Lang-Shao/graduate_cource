@@ -49,19 +49,17 @@ Put the following into your ".bahsrc":
 Put the followiing into your "caldbinit.sh":
 
 
-> if [ -z "$CALDB" ]; then
 
->    CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
+>  CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
 
->    caldb_software_path=$CALDB/software/
+>  caldb_software_path=$CALDB/software/
 
->    export PYTHONPATH=$PYTHONPATH:$caldb_software_path
+>  export PYTHONPATH=$PYTHONPATH:$caldb_software_path
 
->    echo CALDB_PATH $CALDB
+>  echo CALDB_PATH $CALDB
 
->    echo PYTHONPATH $PYTHONPATH
+>  echo PYTHONPATH $PYTHONPATH
 
-> fi 
 
 > if [ -z "$CALDBCONFIG" ]; then
 
