@@ -46,9 +46,9 @@ Put the following into your ".bahsrc":
 
 > alias caldbinit=". $CALDB/software/tools/caldbinit.sh"
 
-Put the followiing into your "caldbinit.sh":
 
 
+Its optional to make revisions to "caldbinit.sh":
 
 >  CALDB=/home/lang/Software/heasoft-6.28/caldb; export CALDB
 
